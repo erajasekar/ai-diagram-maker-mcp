@@ -1,0 +1,25 @@
+{
+  "name": "ai-diagram-maker-mcp",
+  "version": "1.0.0",
+  "description": "AI Diagram Maker MCP Server",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/erajasekar/ai-diagram-maker-mcp.git"
+  },
+  "keywords": [
+    "ai",
+    "diagram",
+    "mcp",
+    "d2lang"
+  ],
+  "author": "Rajasekar Elango",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/erajasekar/ai-diagram-maker-mcp/issues"
+  },
+  "homepage": "https://github.com/erajasekar/ai-diagram-maker-mcp#readme"
+}
