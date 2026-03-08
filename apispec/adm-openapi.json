@@ -116,7 +116,8 @@
                 "text",
                 "ascii",
                 "json",
-                "image"
+                "image",
+                "mermaid"
               ],
               "description": "Type of input being provided. Defaults to `text` when omitted.",
               "example": "text"
@@ -124,7 +125,7 @@
             "content": {
               "type": "string",
               "minLength": 1,
-              "description": "The main input content. For `text`: a natural-language prompt. For `ascii`: raw ASCII art. For `json`: a JSON string. For `image`: a public URL or base64 data URI (`data:image/...;base64,...`).",
+              "description": "The main input content. For `text`: a natural-language prompt. For `ascii`: raw ASCII art. For `json`: a JSON string. For `image`: a public URL or base64 data URI (`data:image/...;base64,...`). For `mermaid`: a Mermaid diagram definition to convert to D2.",
               "example": "Create a microservices architecture with API gateway, auth service, and database"
             },
             "prompt": {

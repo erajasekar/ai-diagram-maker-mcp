@@ -18,4 +18,5 @@ export const GenerateDiagramV2RequestInputType = {
   ascii: 'ascii',
   json: 'json',
   image: 'image',
+  mermaid: 'mermaid',
 } as const;

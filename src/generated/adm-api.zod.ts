@@ -12,8 +12,8 @@ import zod from 'zod';
  * @summary Generate a diagram
  */
 export const postApiV2DiagramsGenerateBody = zod.object({
-  "inputType": zod.enum(['text', 'ascii', 'json', 'image']).optional().describe('Type of input being provided. Defaults to `text` when omitted.'),
-  "content": zod.string().min(1).describe('The main input content. For `text`: a natural-language prompt. For `ascii`: raw ASCII art. For `json`: a JSON string. For `image`: a public URL or base64 data URI (`data:image/...;base64,...`).'),
+  "inputType": zod.enum(['text', 'ascii', 'json', 'image', 'mermaid']).optional().describe('Type of input being provided. Defaults to `text` when omitted.'),
+  "content": zod.string().min(1).describe('The main input content. For `text`: a natural-language prompt. For `ascii`: raw ASCII art. For `json`: a JSON string. For `image`: a public URL or base64 data URI (`data:image/...;base64,...`). For `mermaid`: a Mermaid diagram definition to convert to D2.'),
   "prompt": zod.string().optional().describe('Optional additional instruction to accompany `ascii`, `json`, or `image` inputs. For `text` inputs this is merged with `content`.'),
   "diagramType": zod.enum(['flowchart', 'sequence', 'erd', 'system_architecture', 'network_architecture', 'uml', 'mindmap', 'workflow']).optional().describe('Preferred diagram type.'),
   "isIconEnabled": zod.boolean().optional().describe('Whether to include icons in the generated diagram.'),

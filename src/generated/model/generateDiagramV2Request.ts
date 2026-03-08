@@ -17,7 +17,7 @@ export interface GenerateDiagramV2Request {
   /** Type of input being provided. Defaults to `text` when omitted. */
   inputType?: GenerateDiagramV2RequestInputType;
   /**
-   * The main input content. For `text`: a natural-language prompt. For `ascii`: raw ASCII art. For `json`: a JSON string. For `image`: a public URL or base64 data URI (`data:image/...;base64,...`).
+   * The main input content. For `text`: a natural-language prompt. For `ascii`: raw ASCII art. For `json`: a JSON string. For `image`: a public URL or base64 data URI (`data:image/...;base64,...`). For `mermaid`: a Mermaid diagram definition to convert to D2.
    * @minLength 1
    */
   content: string;
