@@ -1,6 +1,7 @@
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { postApiV2DiagramsGenerate } from "../generated/adm-api.js";
 import type { GenerateDiagramV2Request } from "../generated/model/index.js";
+import { debugLog } from "../debug.js";
 
 export const DIAGRAM_TYPES = [
   "flowchart",
@@ -14,6 +15,31 @@ export const DIAGRAM_TYPES = [
 ] as const;
 
 export type DiagramType = (typeof DIAGRAM_TYPES)[number];
+
+const MAX_CONTENT_LOG_LENGTH = 2000;
+
+/** Truncate content for safe logging (e.g. base64 image data). */
+function truncateForLog(value: string): string {
+  if (value.length <= MAX_CONTENT_LOG_LENGTH) return value;
+  return `${value.slice(0, MAX_CONTENT_LOG_LENGTH)}... [truncated, total ${value.length} chars]`;
+}
+
+/** Build a payload copy safe for logging (truncate long content e.g. base64). */
+function payloadForLog(
+  body: GenerateDiagramV2Request
+): Record<string, unknown> {
+  const { content, ...rest } = body;
+  const contentStr = typeof content === "string" ? content : String(content);
+  return { ...rest, content: truncateForLog(contentStr) };
+}
+
+/** Params from agent, safe for logging. */
+function paramsForLog(params: DiagramParams): Record<string, unknown> {
+  return {
+    ...params,
+    content: truncateForLog(params.content),
+  };
+}
 
 /**
  * Shared parameters accepted by all diagram generation tools.
@@ -32,6 +58,8 @@ export async function generateDiagram(
   inputType: GenerateDiagramV2Request["inputType"],
   params: DiagramParams
 ): Promise<CallToolResult> {
+  debugLog("Tool called:", { inputType, params: paramsForLog(params) });
+
   const apiKey = process.env.ADM_API_KEY;
   if (!apiKey) {
     return {
@@ -54,6 +82,8 @@ export async function generateDiagram(
       diagramType: params.diagramType,
     }),
   };
+
+  debugLog("Request payload to AI Diagram Maker API:", payloadForLog(requestBody));
 
   const response = await postApiV2DiagramsGenerate(requestBody);
 

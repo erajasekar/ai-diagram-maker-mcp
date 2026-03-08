@@ -48,6 +48,8 @@ Add to your Cursor MCP settings (`~/.cursor/mcp.json` or via **Settings → MCP*
 }
 ```
 
+To enable debug logging (request params and API payload), add `"ADM_DEBUG": "1"` to the `env` object. View output in **Cursor → Output** panel, then select the **MCP** or **ai-diagram-maker** channel so you see the server’s stderr logs.
+
 ### Claude Desktop
 
 Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
@@ -90,7 +92,8 @@ Then point your MCP client at `http://localhost:3001/mcp`.
 | Variable | Required | Default | Description |
 |---|---|---|---|
 | `ADM_API_KEY` | Yes | — | Your AI Diagram Maker API key |
-| `ADM_BASE_URL` | No | `https://aidiagrammaker.com` | Override for local/staging API |
+| `ADM_BASE_URL` | No | `https://app.aidiagrammaker.com` | Override for local/staging API |
+| `ADM_DEBUG` | No | — | Set to `1`, `true`, or `yes` to log request parameters from the AI agent and the request payload sent to the AI Diagram Maker API. Logs go to stderr. |
 
 ## Tools
 
