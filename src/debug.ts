@@ -4,11 +4,18 @@
  * Cursor and other MCP clients can show stderr in server/MCP logs.
  */
 
-const DEBUG_VALUES = new Set(["1", "true", "yes"]);
+const TRUTHY_VALUES = new Set(["1", "true", "yes"]);
+
+function isTruthy(value: string | undefined): boolean {
+  return Boolean(value && TRUTHY_VALUES.has(String(value).toLowerCase()));
+}
 
 export function isDebug(): boolean {
-  const raw = process.env.ADM_DEBUG;
-  return Boolean(raw && DEBUG_VALUES.has(String(raw).toLowerCase()));
+  return isTruthy(process.env.ADM_DEBUG);
+}
+
+export function isMock(): boolean {
+  return isTruthy(process.env.ADM_MOCK);
 }
 
 export function debugLog(...args: unknown[]): void {
@@ -19,4 +26,14 @@ export function debugLog(...args: unknown[]): void {
     return;
   }
   console.error(prefix, ...args);
+}
+
+/** Always-on startup banner — confirms the server started and shows active env flags. */
+export function logStartup(transport: string): void {
+  const flags = [
+    `debug=${isDebug() ? "on (ADM_DEBUG)" : "off"}`,
+    `mock=${isMock() ? "on (ADM_MOCK)" : "off"}`,
+    `apiKey=${process.env.ADM_API_KEY ? "set" : "NOT SET"}`,
+  ].join(", ");
+  console.error(`[ADM MCP] Server started (transport=${transport}) — ${flags}`);
 }

@@ -1,7 +1,7 @@
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { postApiV2DiagramsGenerate } from "../generated/adm-api.js";
 import type { GenerateDiagramV2Request } from "../generated/model/index.js";
-import { debugLog } from "../debug.js";
+import { debugLog, isMock } from "../debug.js";
 
 export const DIAGRAM_TYPES = [
   "flowchart",
@@ -81,6 +81,7 @@ export async function generateDiagram(
     ...(params.diagramType !== undefined && {
       diagramType: params.diagramType,
     }),
+    ...(isMock() && { useMock: true }),
   };
 
   debugLog("Request payload to AI Diagram Maker API:", payloadForLog(requestBody));

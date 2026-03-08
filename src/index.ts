@@ -13,6 +13,7 @@
  */
 
 import { createServer } from "./server.js";
+import { logStartup } from "./debug.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
   StreamableHTTPServerTransport,
@@ -52,6 +53,7 @@ function parseArgs(): { transport: "stdio" | "http"; port: number } {
 // ── Transports ────────────────────────────────────────────────────────────────
 
 async function startStdio(): Promise<void> {
+  logStartup("stdio");
   const server = createServer();
   const transport = new StdioServerTransport();
   await server.connect(transport);
@@ -97,8 +99,9 @@ async function startHttp(port: number): Promise<void> {
   });
 
   httpServer.listen(port, () => {
+    logStartup("http");
     console.error(
-      `AI Diagram Maker MCP server running on http://localhost:${port}/mcp`
+      `[ADM MCP] Listening on http://localhost:${port}/mcp`
     );
   });
 
