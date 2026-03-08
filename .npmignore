@@ -1,0 +1,5 @@
+src/
+apispec/
+orval.config.ts
+tsconfig.json
+*.map
