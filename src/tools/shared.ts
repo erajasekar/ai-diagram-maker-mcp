@@ -81,7 +81,10 @@ export async function generateDiagram(
     ...(params.diagramType !== undefined && {
       diagramType: params.diagramType,
     }),
-    ...(isMock() && { useMock: true }),
+    options: {
+      saveDiagramEnabled: true,
+      ...(isMock() && { useMock: true }),
+    },
   };
 
   debugLog("Request payload to AI Diagram Maker API:", payloadForLog(requestBody));
@@ -89,12 +92,16 @@ export async function generateDiagram(
   const response = await postApiV2DiagramsGenerate(requestBody);
 
   if (response.status === 200) {
-    const { png, text } = response.data;
+    const { png, text, diagramUrl } = response.data;
 
     const content: CallToolResult["content"] = [];
 
-    if (text) {
-      content.push({ type: "text", text });
+    let textContent = text ?? "";
+    if (diagramUrl) {
+      textContent += `\n\nOpen in editor: ${diagramUrl}`;
+    }
+    if (textContent) {
+      content.push({ type: "text", text: textContent });
     }
 
     if (png) {

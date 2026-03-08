@@ -15,6 +15,8 @@ export interface GenerateDiagramV2Response {
   png?: string;
   /** LLM explanation text (D2 code blocks removed). */
   text: string;
+  /** URL to open the saved diagram in the editor. Present only when `options.saveDiagramEnabled` was `true`. */
+  diagramUrl?: string;
   /** Token usage breakdown for this request. */
   usage?: GenerateDiagramV2ResponseUsage;
   /** Identifier of the AI model that generated the diagram. */

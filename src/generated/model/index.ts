@@ -7,6 +7,8 @@
  */
 
 export * from './errorResponse';
+export * from './generateDiagramV2Options';
+export * from './generateDiagramV2OptionsColorMode';
 export * from './generateDiagramV2Request';
 export * from './generateDiagramV2RequestColorMode';
 export * from './generateDiagramV2RequestDiagramType';

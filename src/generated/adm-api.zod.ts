@@ -16,11 +16,15 @@ export const postApiV2DiagramsGenerateBody = zod.object({
   "content": zod.string().min(1).describe('The main input content. For `text`: a natural-language prompt. For `ascii`: raw ASCII art. For `json`: a JSON string. For `image`: a public URL or base64 data URI (`data:image/...;base64,...`). For `mermaid`: a Mermaid diagram definition to convert to D2.'),
   "prompt": zod.string().optional().describe('Optional additional instruction to accompany `ascii`, `json`, or `image` inputs. For `text` inputs this is merged with `content`.'),
   "diagramType": zod.enum(['flowchart', 'sequence', 'erd', 'system_architecture', 'network_architecture', 'uml', 'mindmap', 'workflow']).optional().describe('Preferred diagram type.'),
+  "format": zod.enum(['svg', 'png']).optional().describe('Output format. `png` returns a base64-encoded PNG string. `svg` returns the raw SVG markup. Defaults to `png`.'),
+  "options": zod.object({
+  "saveDiagramEnabled": zod.boolean().optional().describe('When `true`, persists the diagram to the user\'s workspace and returns `diagramUrl` in the response.'),
+  "workspaceId": zod.string().optional().describe('Target workspace ID when saving. Defaults to the user\'s current workspace if omitted.'),
+  "useMock": zod.boolean().optional().describe('When `true`, returns a mock diagram response instead of calling the AI model. Useful for development and testing.'),
   "isIconEnabled": zod.boolean().optional().describe('Whether to include icons in the generated diagram.'),
   "colorTheme": zod.string().optional().describe('Color theme ID to apply to the diagram.'),
-  "colorMode": zod.enum(['light', 'dark']).optional().describe('Rendering color mode.'),
-  "format": zod.enum(['svg', 'png']).optional().describe('Output format. `png` returns a base64-encoded PNG string. `svg` returns the raw SVG markup. Defaults to `png`.'),
-  "useMock": zod.boolean().optional().describe('When `true`, returns a mock diagram response instead of calling the AI model. Useful for development and testing.')
+  "colorMode": zod.enum(['light', 'dark']).optional().describe('Rendering color mode.')
+}).optional().describe('Optional settings for diagram generation and saving.')
 }).describe('Request body for the v2 diagram generation endpoint.')
 
 export const postApiV2DiagramsGenerateResponse = zod.object({
@@ -28,6 +32,7 @@ export const postApiV2DiagramsGenerateResponse = zod.object({
   "svg": zod.string().optional().describe('Generated SVG diagram string. Present only when `format=svg`.'),
   "png": zod.string().optional().describe('Base64-encoded PNG of the diagram (no data URI prefix). Present only when `format=png` (the default).'),
   "text": zod.string().describe('LLM explanation text (D2 code blocks removed).'),
+  "diagramUrl": zod.string().optional().describe('URL to open the saved diagram in the editor. Present only when `options.saveDiagramEnabled` was `true`.'),
   "usage": zod.object({
   "promptTokens": zod.number(),
   "completionTokens": zod.number(),

@@ -7,8 +7,8 @@
  */
 import type { GenerateDiagramV2RequestInputType } from './generateDiagramV2RequestInputType';
 import type { GenerateDiagramV2RequestDiagramType } from './generateDiagramV2RequestDiagramType';
-import type { GenerateDiagramV2RequestColorMode } from './generateDiagramV2RequestColorMode';
 import type { GenerateDiagramV2RequestFormat } from './generateDiagramV2RequestFormat';
+import type { GenerateDiagramV2Options } from './generateDiagramV2Options';
 
 /**
  * Request body for the v2 diagram generation endpoint.
@@ -25,14 +25,7 @@ export interface GenerateDiagramV2Request {
   prompt?: string;
   /** Preferred diagram type. */
   diagramType?: GenerateDiagramV2RequestDiagramType;
-  /** Whether to include icons in the generated diagram. */
-  isIconEnabled?: boolean;
-  /** Color theme ID to apply to the diagram. */
-  colorTheme?: string;
-  /** Rendering color mode. */
-  colorMode?: GenerateDiagramV2RequestColorMode;
   /** Output format. `png` returns a base64-encoded PNG string. `svg` returns the raw SVG markup. Defaults to `png`. */
   format?: GenerateDiagramV2RequestFormat;
-  /** When `true`, returns a mock diagram response instead of calling the AI model. Useful for development and testing. */
-  useMock?: boolean;
+  options?: GenerateDiagramV2Options;
 }
