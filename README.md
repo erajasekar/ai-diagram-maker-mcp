@@ -4,7 +4,7 @@ MCP server for [AI Diagram Maker](https://aidiagrammaker.com) — generate beaut
 
 ## Features
 
-- **4 tools** covering every input type: natural language text, JSON, ASCII art, and images
+- **5 tools** covering every input type: natural language text, JSON, ASCII art, images, and Mermaid
 - **Inline PNG rendering** — diagrams appear directly in the chat, no downloads
 - **8 diagram types**: flowchart, sequence, ERD, system architecture, network architecture, UML, mindmap, workflow
 - Supports both **stdio** (local) and **HTTP/Streamable HTTP** (remote) transports
@@ -147,6 +147,18 @@ Convert a whiteboard photo, screenshot, or any image into a clean diagram.
 | `content` | string | Yes | Public image URL or base64 data URI |
 | `prompt` | string | No | What to extract or how to render |
 | `diagramType` | enum | No | Preferred output diagram type |
+
+---
+
+### `generate_diagram_from_mermaid`
+
+Convert a Mermaid diagram definition to D2 and return a PNG image.
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `content` | string | Yes | Mermaid diagram source (e.g. flowchart, sequenceDiagram, erDiagram) |
+| `prompt` | string | No | Optional layout or styling instruction |
+| `diagramType` | enum | No | Preferred diagram type for the converted output |
 
 ## Trigger Keywords
 
