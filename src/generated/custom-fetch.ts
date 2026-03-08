@@ -7,7 +7,7 @@
  * client expects for its discriminated-union response types.
  */
 
-const DEFAULT_BASE_URL = "https://aidiagrammaker.com";
+const DEFAULT_BASE_URL = "https://app.aidiagrammaker.com";
 
 export async function customFetch<T>(
   url: string,
