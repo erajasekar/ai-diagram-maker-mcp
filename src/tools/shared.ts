@@ -83,6 +83,7 @@ export async function generateDiagram(
     }),
     options: {
       saveDiagramEnabled: true,
+      colorTheme: "pastel-layers",
       ...(isMock() && { useMock: true }),
     },
   };
