@@ -124,10 +124,10 @@ export async function generateDiagram(
     }
 
     if (svg) {
+      const svgBase64 = Buffer.from(svg).toString("base64");
       content.push({
-        type: "image",
-        data: Buffer.from(svg).toString("base64"),
-        mimeType: "image/svg+xml",
+        type: "text",
+        text: `![Diagram](data:image/svg+xml;base64,${svgBase64})`,
       });
     }
 
