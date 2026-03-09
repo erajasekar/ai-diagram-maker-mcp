@@ -92,6 +92,17 @@ export async function generateDiagram(
 
   const response = await postApiV2DiagramsGenerate(requestBody);
 
+  const responseForLog = {
+    status: response.status,
+    data: {
+      ...response.data,
+      ...(typeof (response.data as { png?: string })?.png === "string" && {
+        png: truncateForLog((response.data as { png: string }).png),
+      }),
+    },
+  };
+  debugLog("Generate diagram API response:", responseForLog);
+
   if (response.status === 200) {
     const { png, text, diagramUrl } = response.data;
 
