@@ -52,7 +52,7 @@ export interface DiagramParams {
 
 /**
  * Calls the AI Diagram Maker REST API and returns an MCP CallToolResult
- * containing an inline base64 PNG image plus the explanatory text.
+ * containing an inline SVG image plus the explanatory text.
  */
 export async function generateDiagram(
   inputType: GenerateDiagramV2Request["inputType"],
@@ -76,7 +76,7 @@ export async function generateDiagram(
   const requestBody: GenerateDiagramV2Request = {
     inputType,
     content: params.content,
-    format: "png",
+    format: "svg",
     ...(params.prompt !== undefined && { prompt: params.prompt }),
     ...(params.diagramType !== undefined && {
       diagramType: params.diagramType,
@@ -96,15 +96,15 @@ export async function generateDiagram(
     status: response.status,
     data: {
       ...response.data,
-      ...(typeof (response.data as { png?: string })?.png === "string" && {
-        png: truncateForLog((response.data as { png: string }).png),
+      ...(typeof (response.data as { svg?: string })?.svg === "string" && {
+        svg: truncateForLog((response.data as { svg: string }).svg),
       }),
     },
   };
   debugLog("Generate diagram API response:", responseForLog);
 
   if (response.status === 200) {
-    const { png, text, diagramUrl } = response.data;
+    const { svg, text, diagramUrl } = response.data;
 
     const content: CallToolResult["content"] = [];
 
@@ -123,11 +123,11 @@ export async function generateDiagram(
       content.push({ type: "text", text: textContent });
     }
 
-    if (png) {
+    if (svg) {
       content.push({
         type: "image",
-        data: png,
-        mimeType: "image/png",
+        data: Buffer.from(svg).toString("base64"),
+        mimeType: "image/svg+xml",
       });
     }
 
