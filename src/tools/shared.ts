@@ -98,7 +98,14 @@ export async function generateDiagram(
 
     let textContent = text ?? "";
     if (diagramUrl) {
-      textContent += `\n\nOpen in editor: ${diagramUrl}`;
+      const baseUrl = (process.env.ADM_BASE_URL ?? "https://app.aidiagrammaker.com").replace(
+        /\/$/,
+        ""
+      );
+      const fullDiagramUrl = diagramUrl.startsWith("/")
+        ? `${baseUrl}${diagramUrl}`
+        : diagramUrl;
+      textContent += `\n\nEdit diagram: ${fullDiagramUrl} (open in browser to view and edit)`;
     }
     if (textContent) {
       content.push({ type: "text", text: textContent });

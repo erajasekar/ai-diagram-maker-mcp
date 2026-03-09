@@ -6,6 +6,7 @@ MCP server for [AI Diagram Maker](https://aidiagrammaker.com) — generate beaut
 
 - **5 tools** covering every input type: natural language text, JSON, ASCII art, images, and Mermaid
 - **Inline PNG rendering** — diagrams appear directly in the chat, no downloads
+- **Diagram URL in responses** — open it in your browser to view and edit the diagram
 - **8 diagram types**: flowchart, sequence, ERD, system architecture, network architecture, UML, mindmap, workflow
 - Supports both **stdio** (local) and **HTTP/Streamable HTTP** (remote) transports
 
@@ -92,7 +93,7 @@ Then point your MCP client at `http://localhost:3001/mcp`.
 | Variable | Required | Default | Description |
 |---|---|---|---|
 | `ADM_API_KEY` | Yes | — | Your AI Diagram Maker API key |
-| `ADM_BASE_URL` | No | `https://app.aidiagrammaker.com` | Override for local/staging API |
+| `ADM_BASE_URL` | No | `https://app.aidiagrammaker.com` | Override for local/staging API; also used as the base for diagram URLs in tool responses |
 | `ADM_DEBUG` | No | — | Set to `1`, `true`, or `yes` to log request parameters from the AI agent and the request payload sent to the AI Diagram Maker API. Logs go to stderr. |
 
 ## Tools
