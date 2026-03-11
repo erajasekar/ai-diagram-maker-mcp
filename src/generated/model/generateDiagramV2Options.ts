@@ -19,6 +19,8 @@ export interface GenerateDiagramV2Options {
   useMock?: boolean;
   /** Whether to include icons in the generated diagram. */
   isIconEnabled?: boolean;
+  /** When `true`, the response includes the generated D2 source code. On compilation failure, the D2 code and full error details are also returned. */
+  debug?: boolean;
   /** Color theme ID to apply to the diagram. */
   colorTheme?: string;
   /** Rendering color mode. */

@@ -22,7 +22,9 @@ export function createServer(): McpServer {
         "Use the available tools to create diagrams from natural language descriptions, " +
         "JSON data, ASCII art, images, or Mermaid diagram definitions. " +
         "Trigger keywords: 'adm', 'ai diagram maker', 'create diagram', 'show diagram', " +
-        "'visualise', 'draw a flowchart', 'sequence diagram', 'architecture diagram'.",
+        "'visualise', 'draw a flowchart', 'sequence diagram', 'architecture diagram'. " +
+        "When the user requests icons or mentions 'with icons', 'include icons', or 'add icons', " +
+        "pass isIconEnabled: true to the tool — icon support is controlled by this parameter.",
     }
   );
 

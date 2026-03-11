@@ -25,6 +25,12 @@ const inputSchema = {
     .describe(
       "Preferred output diagram type. Leave blank to let the AI decide based on the image content."
     ),
+  isIconEnabled: z
+    .boolean()
+    .optional()
+    .describe(
+      "Set to true when the user asks to include icons in the diagram."
+    ),
 };
 
 export function registerGenerateImageTool(server: McpServer): void {

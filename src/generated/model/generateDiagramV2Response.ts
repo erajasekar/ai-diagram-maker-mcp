@@ -17,6 +17,8 @@ export interface GenerateDiagramV2Response {
   text: string;
   /** URL to open the saved diagram in the editor. Present only when `options.saveDiagramEnabled` was `true`. */
   diagramUrl?: string;
+  /** Generated D2 source code. Present only when `options.debug` is `true`. */
+  d2Code?: string;
   /** Token usage breakdown for this request. */
   usage?: GenerateDiagramV2ResponseUsage;
   /** Identifier of the AI model that generated the diagram. */

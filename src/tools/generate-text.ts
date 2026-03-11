@@ -23,6 +23,12 @@ const inputSchema = {
     .describe(
       'Additional styling or layout instruction. Example: "Use left-to-right layout with pastel colors"'
     ),
+  isIconEnabled: z
+    .boolean()
+    .optional()
+    .describe(
+      "Set to true when the user asks to include icons in the diagram."
+    ),
 };
 
 export function registerGenerateTextTool(server: McpServer): void {

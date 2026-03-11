@@ -1,7 +1,7 @@
 import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { postApiV2DiagramsGenerate } from "../generated/adm-api.js";
 import type { GenerateDiagramV2Request } from "../generated/model/index.js";
-import { debugLog, isMock } from "../debug.js";
+import { debugLog, isDebug, isMock } from "../debug.js";
 
 export const DIAGRAM_TYPES = [
   "flowchart",
@@ -48,6 +48,7 @@ export interface DiagramParams {
   content: string;
   prompt?: string;
   diagramType?: DiagramType;
+  isIconEnabled?: boolean;
 }
 
 /**
@@ -85,6 +86,8 @@ export async function generateDiagram(
       saveDiagramEnabled: true,
       colorTheme: "pastel-layers",
       ...(isMock() && { useMock: true }),
+      ...(isDebug() && { debug: true }),
+      ...(params.isIconEnabled && { isIconEnabled: true }),
     },
   };
 
@@ -104,7 +107,7 @@ export async function generateDiagram(
   debugLog("Generate diagram API response:", responseForLog);
 
   if (response.status === 200) {
-    const { png, text, diagramUrl } = response.data;
+    const { png, text, diagramUrl, d2Code } = response.data;
 
     const content: CallToolResult["content"] = [];
 
@@ -129,6 +132,10 @@ export async function generateDiagram(
         data: png,
         mimeType: "image/png",
       });
+    }
+
+    if (d2Code) {
+      content.push({ type: "text", text: `\`\`\`d2\n${d2Code}\n\`\`\`` });
     }
 
     return { content };

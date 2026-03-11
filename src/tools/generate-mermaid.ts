@@ -21,6 +21,12 @@ const inputSchema = {
     .enum(DIAGRAM_TYPES)
     .optional()
     .describe("Preferred diagram type for the converted D2 output."),
+  isIconEnabled: z
+    .boolean()
+    .optional()
+    .describe(
+      "Set to true when the user asks to include icons in the diagram."
+    ),
 };
 
 export function registerGenerateMermaidTool(server: McpServer): void {

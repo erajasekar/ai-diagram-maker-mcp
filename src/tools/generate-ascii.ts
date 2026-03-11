@@ -26,6 +26,12 @@ const inputSchema = {
     .describe(
       "Preferred diagram type. Leave blank to let the AI infer from the ASCII layout."
     ),
+  isIconEnabled: z
+    .boolean()
+    .optional()
+    .describe(
+      "Set to true when the user asks to include icons in the diagram."
+    ),
 };
 
 export function registerGenerateAsciiTool(server: McpServer): void {

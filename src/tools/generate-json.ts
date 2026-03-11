@@ -25,6 +25,12 @@ const inputSchema = {
     .describe(
       "Preferred diagram type. Defaults to 'erd' for schemas and 'flowchart' for other JSON."
     ),
+  isIconEnabled: z
+    .boolean()
+    .optional()
+    .describe(
+      "Set to true when the user asks to include icons in the diagram."
+    ),
 };
 
 export function registerGenerateJsonTool(server: McpServer): void {
