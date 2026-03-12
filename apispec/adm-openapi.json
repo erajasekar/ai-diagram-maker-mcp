@@ -130,6 +130,11 @@
             "description": "Whether to include icons in the generated diagram.",
             "example": false
           },
+          "debug": {
+            "type": "boolean",
+            "description": "When `true`, the response includes the generated D2 source code. On compilation failure, the D2 code and full error details are also returned.",
+            "example": false
+          },
           "colorTheme": {
             "type": "string",
             "description": "Color theme ID to apply to the diagram.",
@@ -235,6 +240,11 @@
             "type": "string",
             "description": "URL to open the saved diagram in the editor. Present only when `options.saveDiagramEnabled` was `true`.",
             "example": "/diagram/abc123"
+          },
+          "d2Code": {
+            "type": "string",
+            "description": "Generated D2 source code. Present only when `options.debug` is `true`.",
+            "example": "direction: right\nAPI Gateway -> Auth Service\nAPI Gateway -> Database"
           },
           "usage": {
             "type": "object",
