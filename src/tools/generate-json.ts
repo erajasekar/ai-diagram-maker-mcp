@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { DIAGRAM_TYPES, generateDiagram } from "./shared.js";
+import { registerAppTool } from "@modelcontextprotocol/ext-apps/server";
+import { DIAGRAM_TYPES, DIAGRAM_APP_RESOURCE_URI, generateDiagram } from "./shared.js";
 
 const inputSchema = {
   content: z
@@ -34,14 +35,19 @@ const inputSchema = {
 };
 
 export function registerGenerateJsonTool(server: McpServer): void {
-  server.tool(
+  registerAppTool(
+    server,
     "generate_diagram_from_json",
-    "Generate a diagram from a JSON structure. Use this tool when the user wants " +
-      "to visualise JSON data such as API responses, database schemas, dependency trees, " +
-      "configuration files, or any structured data. " +
-      "Pass the raw JSON string as `content`. " +
-      "Returns an inline PNG image.",
-    inputSchema,
+    {
+      description:
+        "Generate a diagram from a JSON structure. Use this tool when the user wants " +
+        "to visualise JSON data such as API responses, database schemas, dependency trees, " +
+        "configuration files, or any structured data. " +
+        "Pass the raw JSON string as `content`. " +
+        "Returns an inline PNG image.",
+      inputSchema,
+      _meta: { ui: { resourceUri: DIAGRAM_APP_RESOURCE_URI } },
+    },
     async (args) => generateDiagram("json", args)
   );
 }

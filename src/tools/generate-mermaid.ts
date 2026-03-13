@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { DIAGRAM_TYPES, generateDiagram } from "./shared.js";
+import { registerAppTool } from "@modelcontextprotocol/ext-apps/server";
+import { DIAGRAM_TYPES, DIAGRAM_APP_RESOURCE_URI, generateDiagram } from "./shared.js";
 
 const inputSchema = {
   content: z
@@ -30,13 +31,18 @@ const inputSchema = {
 };
 
 export function registerGenerateMermaidTool(server: McpServer): void {
-  server.tool(
+  registerAppTool(
+    server,
     "generate_diagram_from_mermaid",
-    "Convert a Mermaid diagram definition into a D2 diagram and return a PNG image. " +
-      "Use this tool when the user has existing Mermaid code (flowchart, sequenceDiagram, erDiagram, etc.) " +
-      "and wants it converted to D2 or rendered as an image. " +
-      "Pass the Mermaid source as content. Returns an inline PNG image.",
-    inputSchema,
+    {
+      description:
+        "Convert a Mermaid diagram definition into a D2 diagram and return a PNG image. " +
+        "Use this tool when the user has existing Mermaid code (flowchart, sequenceDiagram, erDiagram, etc.) " +
+        "and wants it converted to D2 or rendered as an image. " +
+        "Pass the Mermaid source as content. Returns an inline PNG image.",
+      inputSchema,
+      _meta: { ui: { resourceUri: DIAGRAM_APP_RESOURCE_URI } },
+    },
     async (args) => generateDiagram("mermaid", args)
   );
 }

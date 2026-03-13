@@ -5,8 +5,8 @@
  * Generate D2 diagrams from natural language, ASCII art, JSON, or images. Designed for use with MCP servers and direct API integrations.
  * OpenAPI spec version: 2.0.0
  */
-import type { RateLimitErrorError } from './rateLimitErrorError';
-import type { RateLimitErrorRateLimitError } from './rateLimitErrorRateLimitError';
+import type { RateLimitErrorError } from './rateLimitErrorError.js';
+import type { RateLimitErrorRateLimitError } from './rateLimitErrorRateLimitError.js';
 
 export interface RateLimitError {
   success: boolean;

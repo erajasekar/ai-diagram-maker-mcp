@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { DIAGRAM_TYPES, generateDiagram } from "./shared.js";
+import { registerAppTool } from "@modelcontextprotocol/ext-apps/server";
+import { DIAGRAM_TYPES, DIAGRAM_APP_RESOURCE_URI, generateDiagram } from "./shared.js";
 
 const inputSchema = {
   content: z
@@ -35,14 +36,19 @@ const inputSchema = {
 };
 
 export function registerGenerateAsciiTool(server: McpServer): void {
-  server.tool(
+  registerAppTool(
+    server,
     "generate_diagram_from_ascii",
-    "Convert an ASCII art diagram into a polished visual diagram. " +
-      "Use this tool when the user has an existing ASCII art representation of a system, " +
-      "flow, or architecture and wants it rendered as a proper diagram. " +
-      "Accepts box-drawing characters, arrow representations (-->, ==>), and plain text layouts. " +
-      "Returns an inline PNG image.",
-    inputSchema,
+    {
+      description:
+        "Convert an ASCII art diagram into a polished visual diagram. " +
+        "Use this tool when the user has an existing ASCII art representation of a system, " +
+        "flow, or architecture and wants it rendered as a proper diagram. " +
+        "Accepts box-drawing characters, arrow representations (-->, ==>), and plain text layouts. " +
+        "Returns an inline PNG image.",
+      inputSchema,
+      _meta: { ui: { resourceUri: DIAGRAM_APP_RESOURCE_URI } },
+    },
     async (args) => generateDiagram("ascii", args)
   );
 }

@@ -5,7 +5,7 @@
  * Generate D2 diagrams from natural language, ASCII art, JSON, or images. Designed for use with MCP servers and direct API integrations.
  * OpenAPI spec version: 2.0.0
  */
-import type { GenerateDiagramV2OptionsColorMode } from './generateDiagramV2OptionsColorMode';
+import type { GenerateDiagramV2OptionsColorMode } from './generateDiagramV2OptionsColorMode.js';
 
 /**
  * Optional settings for diagram generation and saving.

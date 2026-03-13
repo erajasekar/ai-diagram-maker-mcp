@@ -2,6 +2,7 @@
   "name": "ai-diagram-maker-mcp",
   "version": "1.1.2",
   "description": "MCP server for AI Diagram Maker — generate software engineering diagrams from text, JSON, ASCII art, or images",
+  "type": "module",
   "main": "dist/index.js",
   "bin": {
     "ai-diagram-maker-mcp": "dist/index.js"
@@ -11,8 +12,10 @@
     "apispec"
   ],
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
+    "build": "cross-env INPUT=mcp-app.html vite build && tsc",
+    "build:ui": "cross-env INPUT=mcp-app.html vite build",
+    "build:server": "tsc",
+    "dev": "cross-env NODE_ENV=development concurrently \"cross-env INPUT=mcp-app.html vite build --watch\" \"tsc --watch\"",
     "generate": "orval --config orval.config.ts",
     "start": "node dist/index.js",
     "start:sse": "node dist/index.js --transport sse",
@@ -42,12 +45,23 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
+    "@modelcontextprotocol/ext-apps": "^1.2.2",
     "@modelcontextprotocol/sdk": "^1.9.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
     "zod": "^3.24.2"
   },
   "devDependencies": {
     "@types/node": "^22.13.10",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^4.7.0",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
     "orval": "^7.8.0",
-    "typescript": "^5.8.2"
+    "tsx": "^4.21.0",
+    "typescript": "^5.8.2",
+    "vite": "^6.4.1",
+    "vite-plugin-singlefile": "^2.3.0"
   }
 }

@@ -10,9 +10,9 @@ import type {
   GenerateDiagramV2Request,
   GenerateDiagramV2Response,
   RateLimitError
-} from './model';
+} from './model/index.js';
 
-import { customFetch } from './custom-fetch';
+import { customFetch } from './custom-fetch.js';
 /**
  * Generates a D2 diagram (SVG + source code) from multiple input types — natural language text, ASCII art, JSON, or an image. Optimised for MCP server usage.
  * @summary Generate a diagram

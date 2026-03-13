@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { DIAGRAM_TYPES, generateDiagram } from "./shared.js";
+import { registerAppTool } from "@modelcontextprotocol/ext-apps/server";
+import { DIAGRAM_TYPES, DIAGRAM_APP_RESOURCE_URI, generateDiagram } from "./shared.js";
 
 const inputSchema = {
   content: z
@@ -34,14 +35,19 @@ const inputSchema = {
 };
 
 export function registerGenerateImageTool(server: McpServer): void {
-  server.tool(
+  registerAppTool(
+    server,
     "generate_diagram_from_image",
-    "Convert an image (whiteboard photo, screenshot, hand-drawn sketch) into a clean diagram. " +
-      "Use this tool when the user provides an image URL or base64-encoded image " +
-      "and wants it converted to a proper software engineering diagram. " +
-      "Accepts public image URLs or base64 data URIs (data:image/...;base64,...). " +
-      "Returns an inline PNG image.",
-    inputSchema,
+    {
+      description:
+        "Convert an image (whiteboard photo, screenshot, hand-drawn sketch) into a clean diagram. " +
+        "Use this tool when the user provides an image URL or base64-encoded image " +
+        "and wants it converted to a proper software engineering diagram. " +
+        "Accepts public image URLs or base64 data URIs (data:image/...;base64,...). " +
+        "Returns an inline PNG image.",
+      inputSchema,
+      _meta: { ui: { resourceUri: DIAGRAM_APP_RESOURCE_URI } },
+    },
     async (args) => generateDiagram("image", args)
   );
 }

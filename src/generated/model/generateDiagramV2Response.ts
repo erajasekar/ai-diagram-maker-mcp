@@ -5,7 +5,7 @@
  * Generate D2 diagrams from natural language, ASCII art, JSON, or images. Designed for use with MCP servers and direct API integrations.
  * OpenAPI spec version: 2.0.0
  */
-import type { GenerateDiagramV2ResponseUsage } from './generateDiagramV2ResponseUsage';
+import type { GenerateDiagramV2ResponseUsage } from './generateDiagramV2ResponseUsage.js';
 
 export interface GenerateDiagramV2Response {
   success: boolean;

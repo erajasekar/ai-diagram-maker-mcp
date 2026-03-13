@@ -1,12 +1,23 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { registerAppResource, RESOURCE_MIME_TYPE } from "@modelcontextprotocol/ext-apps/server";
 import { registerGenerateTextTool } from "./tools/generate-text.js";
 import { registerGenerateJsonTool } from "./tools/generate-json.js";
 import { registerGenerateAsciiTool } from "./tools/generate-ascii.js";
 import { registerGenerateImageTool } from "./tools/generate-image.js";
 import { registerGenerateMermaidTool } from "./tools/generate-mermaid.js";
+import { DIAGRAM_APP_RESOURCE_URI } from "./tools/shared.js";
+import { readFileSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const SERVER_NAME = "ai-diagram-maker";
 const SERVER_VERSION = "1.0.0";
+
+// Resolve the dist directory for reading the bundled UI HTML.
+// Works both from source (src/server.ts) and compiled (dist/server.js).
+const DIST_DIR = import.meta.url.endsWith(".ts")
+  ? join(dirname(fileURLToPath(import.meta.url)), "../dist")
+  : dirname(fileURLToPath(import.meta.url));
 
 /**
  * Creates and configures the AI Diagram Maker MCP server.
@@ -33,6 +44,19 @@ export function createServer(): McpServer {
   registerGenerateAsciiTool(server);
   registerGenerateImageTool(server);
   registerGenerateMermaidTool(server);
+
+  registerAppResource(
+    server,
+    "Diagram Viewer",
+    DIAGRAM_APP_RESOURCE_URI,
+    { mimeType: RESOURCE_MIME_TYPE },
+    async () => {
+      const html = readFileSync(join(DIST_DIR, "mcp-app.html"), "utf-8");
+      return {
+        contents: [{ uri: DIAGRAM_APP_RESOURCE_URI, mimeType: RESOURCE_MIME_TYPE, text: html }],
+      };
+    },
+  );
 
   return server;
 }

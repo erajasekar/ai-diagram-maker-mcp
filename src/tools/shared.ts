@@ -3,6 +3,8 @@ import { postApiV2DiagramsGenerate } from "../generated/adm-api.js";
 import type { GenerateDiagramV2Request } from "../generated/model/index.js";
 import { debugLog, isDebug, isMock } from "../debug.js";
 
+export const DIAGRAM_APP_RESOURCE_URI = "ui://ai-diagram-maker/mcp-app.html";
+
 export const DIAGRAM_TYPES = [
   "flowchart",
   "sequence",

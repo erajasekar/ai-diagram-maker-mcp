@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { DIAGRAM_TYPES, generateDiagram } from "./shared.js";
+import { registerAppTool } from "@modelcontextprotocol/ext-apps/server";
+import { DIAGRAM_TYPES, DIAGRAM_APP_RESOURCE_URI, generateDiagram } from "./shared.js";
 
 const inputSchema = {
   content: z
@@ -32,15 +33,20 @@ const inputSchema = {
 };
 
 export function registerGenerateTextTool(server: McpServer): void {
-  server.tool(
+  registerAppTool(
+    server,
     "generate_diagram_from_text",
-    "Generate a software engineering diagram from a natural language description. " +
-      "Use this tool when: the user asks to 'create a diagram', 'show me a flowchart', " +
-      "'visualise the architecture', uses the keyword 'adm' or 'ai diagram maker', " +
-      "or asks for any visual representation of code, systems, processes or data flows. " +
-      "Supported diagram types: flowchart, sequence, ERD, system architecture, " +
-      "network architecture, UML, mindmap, workflow. Returns an inline PNG image.",
-    inputSchema,
+    {
+      description:
+        "Generate a software engineering diagram from a natural language description. " +
+        "Use this tool when: the user asks to 'create a diagram', 'show me a flowchart', " +
+        "'visualise the architecture', uses the keyword 'adm' or 'ai diagram maker', " +
+        "or asks for any visual representation of code, systems, processes or data flows. " +
+        "Supported diagram types: flowchart, sequence, ERD, system architecture, " +
+        "network architecture, UML, mindmap, workflow. Returns an inline PNG image.",
+      inputSchema,
+      _meta: { ui: { resourceUri: DIAGRAM_APP_RESOURCE_URI } },
+    },
     async (args) => generateDiagram("text", args)
   );
 }

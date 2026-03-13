@@ -6,16 +6,16 @@
  * OpenAPI spec version: 2.0.0
  */
 
-export * from './errorResponse';
-export * from './generateDiagramV2Options';
-export * from './generateDiagramV2OptionsColorMode';
-export * from './generateDiagramV2Request';
-export * from './generateDiagramV2RequestColorMode';
-export * from './generateDiagramV2RequestDiagramType';
-export * from './generateDiagramV2RequestFormat';
-export * from './generateDiagramV2RequestInputType';
-export * from './generateDiagramV2Response';
-export * from './generateDiagramV2ResponseUsage';
-export * from './rateLimitError';
-export * from './rateLimitErrorError';
-export * from './rateLimitErrorRateLimitError';
+export * from './errorResponse.js';
+export * from './generateDiagramV2Options.js';
+export * from './generateDiagramV2OptionsColorMode.js';
+export * from './generateDiagramV2Request.js';
+export * from './generateDiagramV2RequestColorMode.js';
+export * from './generateDiagramV2RequestDiagramType.js';
+export * from './generateDiagramV2RequestFormat.js';
+export * from './generateDiagramV2RequestInputType.js';
+export * from './generateDiagramV2Response.js';
+export * from './generateDiagramV2ResponseUsage.js';
+export * from './rateLimitError.js';
+export * from './rateLimitErrorError.js';
+export * from './rateLimitErrorRateLimitError.js';
