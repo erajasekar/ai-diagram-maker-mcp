@@ -27,7 +27,6 @@ function parseDiagramResult(result: CallToolResult): Omit<DiagramState, "status"
   }
 
   const textItems = result.content.filter((c) => c.type === "text");
-  const imageItem = result.content.find((c) => c.type === "image");
 
   const firstText = textItems[0]?.text ?? "";
   const urlMatch = firstText.match(/Edit diagram: (https?:\/\/\S+)/);
@@ -35,8 +34,6 @@ function parseDiagramResult(result: CallToolResult): Omit<DiagramState, "status"
   const description = firstText.replace(/\n\nEdit diagram:.*$/s, "").trim();
 
   return {
-    imageData: imageItem?.data,
-    imageMimeType: imageItem?.mimeType,
     description: description || undefined,
     editUrl,
   };
@@ -69,7 +66,7 @@ function IdleView() {
   );
 }
 
-function DiagramView({ state }: { state: DiagramState }) {
+function DiagramView({ state, onOpenLink }: { state: DiagramState; onOpenLink: (url: string) => void }) {
   if (state.status === "idle") return <IdleView />;
   if (state.status === "loading") return <LoadingView />;
   if (state.status === "error") return <ErrorView message={state.errorMessage!} />;
@@ -85,9 +82,9 @@ function DiagramView({ state }: { state: DiagramState }) {
       )}
       {state.description && <p style={styles.description}>{state.description}</p>}
       {state.editUrl && (
-        <a href={state.editUrl} target="_blank" rel="noopener noreferrer" style={styles.editLink}>
+        <button onClick={() => onOpenLink(state.editUrl!)} style={styles.editLink}>
           Open in AI Diagram Maker →
-        </a>
+        </button>
       )}
     </div>
   );
@@ -114,9 +111,36 @@ function DiagramApp() {
 
       app.ontoolresult = async (result) => {
         const parsed = parseDiagramResult(result);
+
+        let imageData: string | undefined;
+        let imageMimeType = "image/png";
+
+        if (!result.isError && parsed.editUrl) {
+          try {
+            const diagramId = new URL(parsed.editUrl).pathname
+              .split("/")
+              .filter(Boolean)
+              .pop();
+            if (diagramId) {
+              const resource = await app.readServerResource({
+                uri: `diagram://result/${diagramId}`,
+              });
+              const blobItem = resource.contents.find((c) => "blob" in c);
+              if (blobItem && "blob" in blobItem) {
+                imageData = blobItem.blob as string;
+                imageMimeType = (blobItem as { mimeType?: string }).mimeType ?? "image/png";
+              }
+            }
+          } catch {
+            // Image fetch failed; show description and link without image
+          }
+        }
+
         setDiagramState({
           status: result.isError ? "error" : "success",
           ...parsed,
+          imageData,
+          imageMimeType,
         });
       };
 
@@ -140,7 +164,7 @@ function DiagramApp() {
   if (error) return <ErrorView message={error.message} />;
   if (!app) return <LoadingView />;
 
-  return <DiagramView state={diagramState} />;
+  return <DiagramView state={diagramState} onOpenLink={(url) => app.openLink({ url })} />;
 }
 
 // ── Styles ────────────────────────────────────────────────────────────────────
@@ -199,6 +223,11 @@ const styles: Record<string, React.CSSProperties> = {
     color: "var(--color-text-info, #2563eb)",
     textDecoration: "none",
     fontWeight: "500",
+    background: "none",
+    border: "none",
+    padding: 0,
+    cursor: "pointer",
+    fontFamily: "inherit",
   },
   errorBox: {
     margin: "16px",

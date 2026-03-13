@@ -2,6 +2,7 @@ import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { postApiV2DiagramsGenerate } from "../generated/adm-api.js";
 import type { GenerateDiagramV2Request } from "../generated/model/index.js";
 import { debugLog, isDebug, isMock } from "../debug.js";
+import { storePng } from "./diagram-store.js";
 
 export const DIAGRAM_APP_RESOURCE_URI = "ui://ai-diagram-maker/mcp-app.html";
 
@@ -123,13 +124,18 @@ export async function generateDiagram(
         ? `${baseUrl}${diagramUrl}`
         : diagramUrl;
       textContent += `\n\nEdit diagram: ${fullDiagramUrl} (open in browser to view and edit)`;
+
+      if (png) {
+        try {
+          const diagramId = new URL(fullDiagramUrl).pathname.split("/").filter(Boolean).pop();
+          if (diagramId) storePng(diagramId, png);
+        } catch {
+          // URL parsing failed; image unavailable in App
+        }
+      }
     }
     if (textContent) {
       content.push({ type: "text", text: textContent });
-    }
-
-    if (png) {
-      content.push({ type: "image", data: png, mimeType: "image/png" });
     }
 
     return { content };
