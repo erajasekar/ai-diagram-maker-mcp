@@ -12,9 +12,9 @@ import { createRoot } from "react-dom/client";
 interface DiagramState {
   status: "idle" | "loading" | "success" | "error";
   imageData?: string;
+  imageMimeType?: string;
   description?: string;
   editUrl?: string;
-  d2Code?: string;
   errorMessage?: string;
 }
 
@@ -34,17 +34,11 @@ function parseDiagramResult(result: CallToolResult): Omit<DiagramState, "status"
   const editUrl = urlMatch?.[1];
   const description = firstText.replace(/\n\nEdit diagram:.*$/s, "").trim();
 
-  const d2Item = textItems.find((c) => c.text?.includes("```d2"));
-  const d2Code = d2Item?.text
-    ?.replace(/^```d2\n?/, "")
-    .replace(/\n?```$/, "")
-    .trim();
-
   return {
     imageData: imageItem?.data,
+    imageMimeType: imageItem?.mimeType,
     description: description || undefined,
     editUrl,
-    d2Code: d2Code || undefined,
   };
 }
 
@@ -75,18 +69,6 @@ function IdleView() {
   );
 }
 
-function D2Code({ code }: { code: string }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div style={styles.d2Section}>
-      <button style={styles.toggle} onClick={() => setOpen((v) => !v)}>
-        {open ? "▼" : "▶"} D2 Source Code
-      </button>
-      {open && <pre style={styles.pre}>{code}</pre>}
-    </div>
-  );
-}
-
 function DiagramView({ state }: { state: DiagramState }) {
   if (state.status === "idle") return <IdleView />;
   if (state.status === "loading") return <LoadingView />;
@@ -96,7 +78,7 @@ function DiagramView({ state }: { state: DiagramState }) {
     <div style={styles.container}>
       {state.imageData && (
         <img
-          src={`data:image/png;base64,${state.imageData}`}
+          src={`data:${state.imageMimeType ?? "image/png"};base64,${state.imageData}`}
           alt="Generated diagram"
           style={styles.image}
         />
@@ -107,7 +89,6 @@ function DiagramView({ state }: { state: DiagramState }) {
           Open in AI Diagram Maker →
         </a>
       )}
-      {state.d2Code && <D2Code code={state.d2Code} />}
     </div>
   );
 }
@@ -218,31 +199,6 @@ const styles: Record<string, React.CSSProperties> = {
     color: "var(--color-text-info, #2563eb)",
     textDecoration: "none",
     fontWeight: "500",
-  },
-  d2Section: {
-    borderTop: "1px solid var(--color-border-primary, #e5e7eb)",
-    paddingTop: "8px",
-  },
-  toggle: {
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-    fontSize: "var(--font-text-md-size, 0.875rem)",
-    color: "var(--color-text-primary, #6b7280)",
-    padding: "4px 0",
-    textAlign: "left" as const,
-  },
-  pre: {
-    marginTop: "8px",
-    padding: "12px",
-    background: "var(--color-background-secondary, #f9fafb)",
-    borderRadius: "var(--border-radius-md, 6px)",
-    fontSize: "0.8125rem",
-    fontFamily: "var(--font-mono, monospace)",
-    overflowX: "auto",
-    whiteSpace: "pre-wrap",
-    wordBreak: "break-word",
-    color: "var(--color-text-primary, #374151)",
   },
   errorBox: {
     margin: "16px",

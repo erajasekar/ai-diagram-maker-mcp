@@ -101,15 +101,15 @@ export async function generateDiagram(
     status: response.status,
     data: {
       ...response.data,
-      ...(typeof (response.data as { png?: string })?.png === "string" && {
-        png: truncateForLog((response.data as { png: string }).png),
+      ...(typeof (response.data as { svg?: string })?.svg === "string" && {
+        svg: truncateForLog((response.data as { svg: string }).svg),
       }),
     },
   };
   debugLog("Generate diagram API response:", responseForLog);
 
   if (response.status === 200) {
-    const { png, text, diagramUrl, d2Code } = response.data;
+    const { png, text, diagramUrl } = response.data;
 
     const content: CallToolResult["content"] = [];
 
@@ -129,15 +129,7 @@ export async function generateDiagram(
     }
 
     if (png) {
-      content.push({
-        type: "image",
-        data: png,
-        mimeType: "image/png",
-      });
-    }
-
-    if (d2Code) {
-      content.push({ type: "text", text: `\`\`\`d2\n${d2Code}\n\`\`\`` });
+      content.push({ type: "image", data: png, mimeType: "image/png" });
     }
 
     return { content };
