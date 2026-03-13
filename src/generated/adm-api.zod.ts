@@ -22,6 +22,7 @@ export const postApiV2DiagramsGenerateBody = zod.object({
   "workspaceId": zod.string().optional().describe('Target workspace ID when saving. Defaults to the user\'s current workspace if omitted.'),
   "useMock": zod.boolean().optional().describe('When `true`, returns a mock diagram response instead of calling the AI model. Useful for development and testing.'),
   "isIconEnabled": zod.boolean().optional().describe('Whether to include icons in the generated diagram.'),
+  "debug": zod.boolean().optional().describe('When `true`, the response includes the generated D2 source code. On compilation failure, the D2 code and full error details are also returned.'),
   "colorTheme": zod.string().optional().describe('Color theme ID to apply to the diagram.'),
   "colorMode": zod.enum(['light', 'dark']).optional().describe('Rendering color mode.')
 }).optional().describe('Optional settings for diagram generation and saving.')
@@ -33,6 +34,7 @@ export const postApiV2DiagramsGenerateResponse = zod.object({
   "png": zod.string().optional().describe('Base64-encoded PNG of the diagram (no data URI prefix). Present only when `format=png` (the default).'),
   "text": zod.string().describe('LLM explanation text (D2 code blocks removed).'),
   "diagramUrl": zod.string().optional().describe('URL to open the saved diagram in the editor. Present only when `options.saveDiagramEnabled` was `true`.'),
+  "d2Code": zod.string().optional().describe('Generated D2 source code. Present only when `options.debug` is `true`.'),
   "usage": zod.object({
   "promptTokens": zod.number(),
   "completionTokens": zod.number(),
