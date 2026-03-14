@@ -199,26 +199,88 @@ The AI agent will automatically select the right tool when you use phrases like:
 - `show me a flowchart / sequence diagram / ERD / architecture ...`
 - `visualise / draw / diagram ...`
 
-## Development
+## Local developer setup
+
+Use these steps to clone the repo, build locally, and run the MCP server with Node.
+
+### 1. Clone the repository
 
 ```bash
-# Clone and install
 git clone https://github.com/erajasekar/ai-diagram-maker-mcp.git
 cd ai-diagram-maker-mcp
-npm install
-
-# Regenerate API client from OpenAPI spec
-npm run generate
-
-# Build
-npm run build
-
-# Run locally (stdio)
-ADM_API_KEY=your_key npm start
-
-# Run HTTP transport
-npm run start:http
 ```
+
+### 2. Install dependencies
+
+```bash
+npm install
+```
+
+### 3. (Optional) Regenerate API client
+
+If you change the AI Diagram Maker OpenAPI spec or config, regenerate the client:
+
+```bash
+npm run generate
+```
+
+### 4. Build
+
+```bash
+npm run build
+```
+
+This compiles TypeScript and builds the MCP app UI into `dist/`. The server entrypoint is `dist/index.js`.
+
+### 5. Run the local MCP server
+
+**stdio (default)** — for use with Cursor, Claude Desktop, etc.:
+
+```bash
+ADM_API_KEY=your_api_key node dist/index.js
+```
+
+Or use the npm script:
+
+```bash
+ADM_API_KEY=your_api_key npm start
+```
+
+**HTTP transport** — for remote clients or testing:
+
+```bash
+ADM_API_KEY=your_api_key node dist/index.js --transport http
+```
+
+Or:
+
+```bash
+ADM_API_KEY=your_api_key npm run start:http
+```
+
+The HTTP server listens on `$PORT` (default `3001`). Send the API key in request headers: `X-ADM-API-Key` or `Authorization: Bearer <key>`.
+
+### 6. Use the local server in Cursor
+
+Point Cursor at your built server via **Settings → MCP** (or `~/.cursor/mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "ai-diagram-maker": {
+      "command": "node",
+      "args": ["/absolute/path/to/ai-diagram-maker-mcp/dist/index.js"],
+      "env": {
+        "ADM_API_KEY": "your_api_key_here"
+      }
+    }
+  }
+}
+```
+
+Replace `/absolute/path/to/ai-diagram-maker-mcp` with the actual path to your cloned repo. After changing the config, restart Cursor or reload the MCP servers.
+
+Add `"ADM_DEBUG": "1"` to `env` to see request logs in **Cursor → Output** (MCP channel).
 
 ## License
 
