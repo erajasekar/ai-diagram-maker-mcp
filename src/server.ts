@@ -6,7 +6,7 @@ import { registerGenerateAsciiTool } from "./tools/generate-ascii.js";
 import { registerGenerateImageTool } from "./tools/generate-image.js";
 import { registerGenerateMermaidTool } from "./tools/generate-mermaid.js";
 import { DIAGRAM_APP_RESOURCE_URI } from "./tools/shared.js";
-import { retrievePng } from "./tools/diagram-store.js";
+import { retrieveSvg } from "./tools/diagram-store.js";
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -64,10 +64,10 @@ export function createServer(): McpServer {
     new ResourceTemplate("diagram://result/{diagramId}", { list: undefined }),
     async (uri, { diagramId }) => {
       const id = Array.isArray(diagramId) ? diagramId[0] : diagramId;
-      const png = id ? retrievePng(id) : undefined;
-      if (!png) throw new Error(`Diagram not found: ${id}`);
+      const svg = id ? retrieveSvg(id) : undefined;
+      if (!svg) throw new Error(`Diagram not found: ${id}`);
       return {
-        contents: [{ uri: uri.href, mimeType: "image/png", blob: png }],
+        contents: [{ uri: uri.href, mimeType: "image/svg+xml", text: svg }],
       };
     },
   );

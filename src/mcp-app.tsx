@@ -4,7 +4,7 @@
 import { useApp } from "@modelcontextprotocol/ext-apps/react";
 import { applyDocumentTheme, applyHostFonts, applyHostStyleVariables } from "@modelcontextprotocol/ext-apps";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import { StrictMode, useEffect, useState } from "react";
+import { StrictMode, useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import Markdown from "react-markdown";
 
@@ -12,6 +12,7 @@ import Markdown from "react-markdown";
 
 interface DiagramState {
   status: "idle" | "loading" | "success" | "error";
+  svgMarkup?: string;
   imageData?: string;
   imageMimeType?: string;
   description?: string;
@@ -67,6 +68,30 @@ function IdleView() {
   );
 }
 
+function SvgView({ markup }: { markup: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container || !markup) return;
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(markup, "image/svg+xml");
+    const svgEl = doc.querySelector("svg");
+    if (!svgEl) return;
+
+    svgEl.style.width = "100%";
+    svgEl.style.height = "auto";
+    svgEl.removeAttribute("width");
+    svgEl.removeAttribute("height");
+
+    container.innerHTML = "";
+    container.appendChild(svgEl);
+  }, [markup]);
+
+  return <div ref={containerRef} style={styles.svgContainer} />;
+}
+
 function DiagramView({ state, onOpenLink }: { state: DiagramState; onOpenLink: (url: string) => void }) {
   if (state.status === "idle") return <IdleView />;
   if (state.status === "loading") return <LoadingView />;
@@ -74,7 +99,8 @@ function DiagramView({ state, onOpenLink }: { state: DiagramState; onOpenLink: (
 
   return (
     <div style={styles.container}>
-      {state.imageData && (
+      {state.svgMarkup && <SvgView markup={state.svgMarkup} />}
+      {!state.svgMarkup && state.imageData && (
         <img
           src={`data:${state.imageMimeType ?? "image/png"};base64,${state.imageData}`}
           alt="Generated diagram"
@@ -117,8 +143,9 @@ function DiagramApp() {
       app.ontoolresult = async (result) => {
         const parsed = parseDiagramResult(result);
 
+        let svgMarkup: string | undefined;
         let imageData: string | undefined;
-        let imageMimeType = "image/png";
+        let imageMimeType: string | undefined;
 
         if (!result.isError && parsed.editUrl) {
           try {
@@ -130,10 +157,15 @@ function DiagramApp() {
               const resource = await app.readServerResource({
                 uri: `diagram://result/${diagramId}`,
               });
-              const blobItem = resource.contents.find((c) => "blob" in c);
-              if (blobItem && "blob" in blobItem) {
-                imageData = blobItem.blob as string;
-                imageMimeType = (blobItem as { mimeType?: string }).mimeType ?? "image/png";
+              const firstItem = resource.contents[0];
+              if (firstItem) {
+                const mime = (firstItem as { mimeType?: string }).mimeType;
+                if (mime === "image/svg+xml" && "text" in firstItem) {
+                  svgMarkup = firstItem.text as string;
+                } else if ("blob" in firstItem) {
+                  imageData = firstItem.blob as string;
+                  imageMimeType = mime ?? "image/png";
+                }
               }
             }
           } catch {
@@ -144,6 +176,7 @@ function DiagramApp() {
         setDiagramState({
           status: result.isError ? "error" : "success",
           ...parsed,
+          svgMarkup,
           imageData,
           imageMimeType,
         });
@@ -209,6 +242,11 @@ const styles: Record<string, React.CSSProperties> = {
     margin: 0,
     fontSize: "var(--font-text-md-size, 1rem)",
     color: "var(--color-text-primary, #9ca3af)",
+  },
+  svgContainer: {
+    width: "100%",
+    borderRadius: "var(--border-radius-md, 6px)",
+    overflow: "hidden",
   },
   image: {
     maxWidth: "100%",

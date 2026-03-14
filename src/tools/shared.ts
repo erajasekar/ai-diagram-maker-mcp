@@ -2,7 +2,7 @@ import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { postApiV2DiagramsGenerate } from "../generated/adm-api.js";
 import type { GenerateDiagramV2Request } from "../generated/model/index.js";
 import { debugLog, isDebug, isMock } from "../debug.js";
-import { storePng } from "./diagram-store.js";
+import { storeSvg } from "./diagram-store.js";
 
 export const DIAGRAM_APP_RESOURCE_URI = "ui://ai-diagram-maker/mcp-app.html";
 
@@ -80,7 +80,7 @@ export async function generateDiagram(
   const requestBody: GenerateDiagramV2Request = {
     inputType,
     content: params.content,
-    format: "png",
+    format: "svg",
     ...(params.prompt !== undefined && { prompt: params.prompt }),
     ...(params.diagramType !== undefined && {
       diagramType: params.diagramType,
@@ -110,7 +110,7 @@ export async function generateDiagram(
   debugLog("Generate diagram API response:", responseForLog);
 
   if (response.status === 200) {
-    const { png, text, diagramUrl } = response.data;
+    const { svg, text, diagramUrl } = response.data;
 
     const content: CallToolResult["content"] = [];
 
@@ -125,10 +125,10 @@ export async function generateDiagram(
         : diagramUrl;
       textContent += `\n\nEdit diagram: ${fullDiagramUrl} (open in browser to view and edit)`;
 
-      if (png) {
+      if (svg) {
         try {
           const diagramId = new URL(fullDiagramUrl).pathname.split("/").filter(Boolean).pop();
-          if (diagramId) storePng(diagramId, png);
+          if (diagramId) storeSvg(diagramId, svg);
         } catch {
           // URL parsing failed; image unavailable in App
         }
