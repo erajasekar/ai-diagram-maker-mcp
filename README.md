@@ -41,7 +41,7 @@ Use the hosted MCP server on Railway with your API key sent in the `X-ADM-API-Ke
 {
   "mcpServers": {
     "ai-diagram-maker": {
-      "url": "https://ai-diagram-maker-mcp-production.up.railway.app/mcp",
+      "url": "https://mcp.aidiagrammaker.com/mcp",
       "headers": {
         "X-ADM-API-Key": "your_api_key_here"
       }
@@ -101,7 +101,7 @@ claude mcp add ai-diagram-maker \
 
 ### HTTP transport (remote / hosted)
 
-A hosted instance runs at **https://ai-diagram-maker-mcp-production.up.railway.app/mcp**. Configure your MCP client with the server URL and pass the API key in request headers (not as an env var):
+A hosted instance runs at **https://mcp.aidiagrammaker.com/mcp**. Configure your MCP client with the server URL and pass the API key in request headers (not as an env var):
 
 - `X-ADM-API-Key: <api_key>` (recommended), or
 - `Authorization: Bearer <api_key>`
