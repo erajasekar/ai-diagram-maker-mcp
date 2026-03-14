@@ -44,7 +44,7 @@ export function registerGenerateImageTool(server: McpServer): void {
         "Use this tool when the user provides an image URL or base64-encoded image " +
         "and wants it converted to a proper software engineering diagram. " +
         "Accepts public image URLs or base64 data URIs (data:image/...;base64,...). " +
-        "Returns an inline PNG image.",
+        "Returns a link to view and edit the generated diagram in the browser.",
       inputSchema,
       _meta: { ui: { resourceUri: DIAGRAM_APP_RESOURCE_URI } },
     },

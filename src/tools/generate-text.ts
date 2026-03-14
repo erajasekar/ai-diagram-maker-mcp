@@ -43,7 +43,8 @@ export function registerGenerateTextTool(server: McpServer): void {
         "'visualise the architecture', uses the keyword 'adm' or 'ai diagram maker', " +
         "or asks for any visual representation of code, systems, processes or data flows. " +
         "Supported diagram types: flowchart, sequence, ERD, system architecture, " +
-        "network architecture, UML, mindmap, workflow. Returns an inline PNG image.",
+        "network architecture, UML, mindmap, workflow. " +
+        "Returns a link to view and edit the generated diagram in the browser.",
       inputSchema,
       _meta: { ui: { resourceUri: DIAGRAM_APP_RESOURCE_URI } },
     },

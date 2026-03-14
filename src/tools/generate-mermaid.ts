@@ -39,7 +39,8 @@ export function registerGenerateMermaidTool(server: McpServer): void {
         "Convert a Mermaid diagram definition into a D2 diagram and return a PNG image. " +
         "Use this tool when the user has existing Mermaid code (flowchart, sequenceDiagram, erDiagram, etc.) " +
         "and wants it converted to D2 or rendered as an image. " +
-        "Pass the Mermaid source as content. Returns an inline PNG image.",
+        "Pass the Mermaid source as content. " +
+        "Returns a link to view and edit the generated diagram in the browser.",
       inputSchema,
       _meta: { ui: { resourceUri: DIAGRAM_APP_RESOURCE_URI } },
     },

@@ -45,7 +45,7 @@ export function registerGenerateAsciiTool(server: McpServer): void {
         "Use this tool when the user has an existing ASCII art representation of a system, " +
         "flow, or architecture and wants it rendered as a proper diagram. " +
         "Accepts box-drawing characters, arrow representations (-->, ==>), and plain text layouts. " +
-        "Returns an inline PNG image.",
+        "Returns a link to view and edit the generated diagram in the browser.",
       inputSchema,
       _meta: { ui: { resourceUri: DIAGRAM_APP_RESOURCE_URI } },
     },

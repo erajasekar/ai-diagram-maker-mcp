@@ -44,7 +44,7 @@ export function registerGenerateJsonTool(server: McpServer): void {
         "to visualise JSON data such as API responses, database schemas, dependency trees, " +
         "configuration files, or any structured data. " +
         "Pass the raw JSON string as `content`. " +
-        "Returns an inline PNG image.",
+        "Returns a link to view and edit the generated diagram in the browser.",
       inputSchema,
       _meta: { ui: { resourceUri: DIAGRAM_APP_RESOURCE_URI } },
     },
