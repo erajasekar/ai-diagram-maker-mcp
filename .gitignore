@@ -2,3 +2,6 @@ node_modules/
 dist/
 *.js.map
 *.d.ts.map
+
+# Local MCP config (may contain API key); use .cursor/mcp.json.example as reference
+.cursor/mcp.json

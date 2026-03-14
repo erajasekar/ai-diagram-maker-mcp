@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "ai-diagram-maker": {
+      "url": "https://ai-diagram-maker-mcp-production.up.railway.app/mcp",
+      "headers": {
+        "X-ADM-API-Key": "your_api_key_here"
+      }
+    }
+  }
+}

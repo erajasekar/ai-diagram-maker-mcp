@@ -33,7 +33,28 @@ npm install -g ai-diagram-maker-mcp
 
 ### Cursor
 
-Add to your Cursor MCP settings (`~/.cursor/mcp.json` or via **Settings → MCP**):
+#### Remote server (recommended)
+
+Use the hosted MCP server on Railway with your API key sent in the `X-ADM-API-Key` header. Add to `~/.cursor/mcp.json` or **Settings → MCP**:
+
+```json
+{
+  "mcpServers": {
+    "ai-diagram-maker": {
+      "url": "https://ai-diagram-maker-mcp-production.up.railway.app/mcp",
+      "headers": {
+        "X-ADM-API-Key": "your_api_key_here"
+      }
+    }
+  }
+}
+```
+
+Replace `your_api_key_here` with your [AI Diagram Maker](https://aidiagrammaker.com) API key. No environment variables are required for this setup.
+
+#### Local (stdio)
+
+To run the server locally instead, use:
 
 ```json
 {
@@ -80,18 +101,20 @@ claude mcp add ai-diagram-maker \
 
 ### HTTP transport (remote / hosted)
 
-Start the server in HTTP mode:
+A hosted instance runs at **https://ai-diagram-maker-mcp-production.up.railway.app/mcp**. Configure your MCP client with the server URL and pass the API key in request headers (not as an env var):
+
+- `X-ADM-API-Key: <api_key>` (recommended), or
+- `Authorization: Bearer <api_key>`
+
+See the [Cursor remote config](#remote-server-recommended) above for a ready-to-use example.
+
+To run your own HTTP server locally:
 
 ```bash
 npx ai-diagram-maker-mcp --transport http
 ```
 
-The server listens on `$PORT` (or 3001). For **HTTP transport**, the API key is sent per request in headers, not as an env var:
-
-- `Authorization: Bearer <api_key>`, or
-- `X-ADM-API-Key: <api_key>`
-
-Configure your MCP client or gateway to include the API key in every request to `/mcp`.
+The server listens on `$PORT` (or 3001). Send the API key in every request to `/mcp` via the headers above.
 
 ## Environment Variables
 
