@@ -6,6 +6,7 @@ import { applyDocumentTheme, applyHostFonts, applyHostStyleVariables } from "@mo
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
+import Markdown from "react-markdown";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -80,7 +81,11 @@ function DiagramView({ state, onOpenLink }: { state: DiagramState; onOpenLink: (
           style={styles.image}
         />
       )}
-      {state.description && <p style={styles.description}>{state.description}</p>}
+      {state.description && (
+        <div className="md-prose" style={styles.description}>
+          <Markdown>{state.description}</Markdown>
+        </div>
+      )}
       {state.editUrl && (
         <button onClick={() => onOpenLink(state.editUrl!)} style={styles.editLink}>
           Open in AI Diagram Maker →
@@ -212,7 +217,6 @@ const styles: Record<string, React.CSSProperties> = {
     display: "block",
   },
   description: {
-    margin: 0,
     fontSize: "var(--font-text-md-size, 0.875rem)",
     lineHeight: "var(--font-text-md-line-height, 1.5)",
     color: "var(--color-text-primary, #374151)",
@@ -240,9 +244,55 @@ const styles: Record<string, React.CSSProperties> = {
   },
 };
 
-// Inject spinner keyframes
+// Inject spinner keyframes + markdown prose styles
 const styleTag = document.createElement("style");
-styleTag.textContent = `@keyframes spin { to { transform: rotate(360deg); } }`;
+styleTag.textContent = `
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Markdown prose styles scoped to description container */
+.md-prose { font-size: var(--font-text-md-size, 0.875rem); line-height: 1.6; color: var(--color-text-primary, #374151); }
+.md-prose > *:first-child { margin-top: 0; }
+.md-prose > *:last-child { margin-bottom: 0; }
+.md-prose h1, .md-prose h2, .md-prose h3, .md-prose h4 {
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 0.75em 0 0.4em;
+  color: var(--color-text-primary, #111827);
+}
+.md-prose h1 { font-size: 1.25em; }
+.md-prose h2 { font-size: 1.1em; }
+.md-prose h3 { font-size: 1em; }
+.md-prose p { margin: 0.4em 0; }
+.md-prose ul, .md-prose ol { margin: 0.4em 0; padding-left: 1.4em; }
+.md-prose li { margin: 0.2em 0; }
+.md-prose strong { font-weight: 600; }
+.md-prose em { font-style: italic; }
+.md-prose code {
+  background: var(--color-background-secondary, #f3f4f6);
+  border-radius: 3px;
+  padding: 0.15em 0.35em;
+  font-size: 0.9em;
+  font-family: var(--font-mono, monospace);
+}
+.md-prose pre {
+  background: var(--color-background-secondary, #f3f4f6);
+  border-radius: var(--border-radius-md, 6px);
+  padding: 0.75em 1em;
+  overflow-x: auto;
+  margin: 0.5em 0;
+}
+.md-prose pre code { background: none; padding: 0; }
+.md-prose table { border-collapse: collapse; width: 100%; margin: 0.5em 0; font-size: 0.875em; }
+.md-prose th, .md-prose td { border: 1px solid var(--color-border-primary, #e5e7eb); padding: 0.4em 0.75em; text-align: left; }
+.md-prose th { background: var(--color-background-secondary, #f9fafb); font-weight: 600; }
+.md-prose blockquote {
+  border-left: 3px solid var(--color-border-primary, #d1d5db);
+  margin: 0.5em 0;
+  padding-left: 1em;
+  color: var(--color-text-secondary, #6b7280);
+}
+.md-prose hr { border: none; border-top: 1px solid var(--color-border-primary, #e5e7eb); margin: 0.75em 0; }
+`;
 document.head.appendChild(styleTag);
 
 // ── Mount ─────────────────────────────────────────────────────────────────────
