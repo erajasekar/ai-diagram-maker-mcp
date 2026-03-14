@@ -83,16 +83,21 @@ claude mcp add ai-diagram-maker \
 Start the server in HTTP mode:
 
 ```bash
-ADM_API_KEY=your_api_key npx ai-diagram-maker-mcp --transport http --port 3001
+npx ai-diagram-maker-mcp --transport http
 ```
 
-Then point your MCP client at `http://localhost:3001/mcp`.
+The server listens on `$PORT` (or 3001). For **HTTP transport**, the API key is sent per request in headers, not as an env var:
+
+- `Authorization: Bearer <api_key>`, or
+- `X-ADM-API-Key: <api_key>`
+
+Configure your MCP client or gateway to include the API key in every request to `/mcp`.
 
 ## Environment Variables
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `ADM_API_KEY` | Yes | — | Your AI Diagram Maker API key |
+| `ADM_API_KEY` | Yes (stdio only) | — | Your AI Diagram Maker API key (used only for stdio transport) |
 | `ADM_BASE_URL` | No | `https://app.aidiagrammaker.com` | Override for local/staging API; also used as the base for diagram URLs in tool responses |
 | `ADM_DEBUG` | No | — | Set to `1`, `true`, or `yes` to log request parameters from the AI agent and the request payload sent to the AI Diagram Maker API. Logs go to stderr. |
 
@@ -189,7 +194,7 @@ npm run build
 ADM_API_KEY=your_key npm start
 
 # Run HTTP transport
-ADM_API_KEY=your_key npm run start:sse
+npm run start:http
 ```
 
 ## License

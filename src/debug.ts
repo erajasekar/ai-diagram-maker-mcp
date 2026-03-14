@@ -30,10 +30,14 @@ export function debugLog(...args: unknown[]): void {
 
 /** Always-on startup banner — confirms the server started and shows active env flags. */
 export function logStartup(transport: string): void {
+  const apiKeySource =
+    transport === "http"
+      ? "from request headers (Authorization / X-ADM-API-Key)"
+      : `env ADM_API_KEY ${process.env.ADM_API_KEY ? "set" : "NOT SET"}`;
   const flags = [
     `debug=${isDebug() ? "on (ADM_DEBUG)" : "off"}`,
     `mock=${isMock() ? "on (ADM_MOCK)" : "off"}`,
-    `apiKey=${process.env.ADM_API_KEY ? "set" : "NOT SET"}`,
+    `apiKey=${apiKeySource}`,
   ].join(", ");
   console.error(`[ADM MCP] Server started (transport=${transport}) — ${flags}`);
 }

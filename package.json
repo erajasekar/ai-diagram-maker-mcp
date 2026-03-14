@@ -18,7 +18,7 @@
     "dev": "cross-env NODE_ENV=development concurrently \"cross-env INPUT=mcp-app.html vite build --watch\" \"tsc --watch\"",
     "generate": "orval --config orval.config.ts",
     "start": "node dist/index.js",
-    "start:sse": "node dist/index.js --transport sse",
+    "start:http": "node dist/index.js --transport http",
     "prepublishOnly": "npm run build"
   },
   "keywords": [

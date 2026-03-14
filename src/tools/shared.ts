@@ -3,6 +3,7 @@ import { postApiV2DiagramsGenerate } from "../generated/adm-api.js";
 import type { GenerateDiagramV2Request } from "../generated/model/index.js";
 import { debugLog, isDebug, isMock } from "../debug.js";
 import { storeSvg } from "./diagram-store.js";
+import { getApiKey } from "../api-key-context.js";
 
 export const DIAGRAM_APP_RESOURCE_URI = "ui://ai-diagram-maker/mcp-app.html";
 
@@ -64,14 +65,18 @@ export async function generateDiagram(
 ): Promise<CallToolResult> {
   debugLog("Tool called:", { inputType, params: paramsForLog(params) });
 
-  const apiKey = process.env.ADM_API_KEY;
+  const apiKey = getApiKey();
   if (!apiKey) {
+    const hint =
+      process.env.PORT != null
+        ? "Send your API key in the Authorization header (Bearer <key>) or X-ADM-API-Key header."
+        : "Set the ADM_API_KEY environment variable.";
     return {
       isError: true,
       content: [
         {
           type: "text",
-          text: "ADM_API_KEY environment variable is not set. Please configure your AI Diagram Maker API key.",
+          text: `AI Diagram Maker API key is required. ${hint}`,
         },
       ],
     };

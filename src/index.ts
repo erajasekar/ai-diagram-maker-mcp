@@ -8,17 +8,18 @@
  *
  * Usage:
  *   ai-diagram-maker-mcp                          # stdio
- *   ai-diagram-maker-mcp --transport http          # HTTP on port 3001
+ *   ai-diagram-maker-mcp --transport http          # HTTP on $PORT or 3001
  *   ai-diagram-maker-mcp --transport http --port 8080
  */
 
 import { createServer } from "./server.js";
 import { logStartup } from "./debug.js";
+import { runWithApiKey } from "./api-key-context.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
   StreamableHTTPServerTransport,
 } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { createServer as createHttpServer } from "node:http";
+import { createServer as createHttpServer, type ServerResponse } from "node:http";
 import { randomUUID } from "node:crypto";
 
 // ── CLI argument parsing ──────────────────────────────────────────────────────
@@ -26,7 +27,8 @@ import { randomUUID } from "node:crypto";
 function parseArgs(): { transport: "stdio" | "http"; port: number } {
   const args = process.argv.slice(2);
   let transport: "stdio" | "http" = "stdio";
-  let port = 3001;
+  // $PORT is set by Railway, Render, Fly and other PaaS platforms.
+  let port = parseInt(process.env.PORT ?? "3001", 10);
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--transport" && args[i + 1]) {
@@ -50,6 +52,18 @@ function parseArgs(): { transport: "stdio" | "http"; port: number } {
   return { transport, port };
 }
 
+// ── CORS ──────────────────────────────────────────────────────────────────────
+
+function setCorsHeaders(res: ServerResponse): void {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, mcp-session-id, Authorization, X-ADM-API-Key",
+  );
+  res.setHeader("Access-Control-Expose-Headers", "mcp-session-id");
+}
+
 // ── Transports ────────────────────────────────────────────────────────────────
 
 async function startStdio(): Promise<void> {
@@ -66,6 +80,22 @@ async function startHttp(port: number): Promise<void> {
 
   const httpServer = createHttpServer(async (req, res) => {
     const url = new URL(req.url ?? "/", `http://localhost:${port}`);
+
+    setCorsHeaders(res);
+
+    // CORS preflight
+    if (req.method === "OPTIONS") {
+      res.writeHead(204).end();
+      return;
+    }
+
+    // Health / readiness check for load balancers and Railway
+    if (url.pathname === "/" || url.pathname === "/health") {
+      res.writeHead(200, { "Content-Type": "application/json" }).end(
+        JSON.stringify({ status: "ok", server: "ai-diagram-maker-mcp" }),
+      );
+      return;
+    }
 
     if (url.pathname !== "/mcp") {
       res.writeHead(404).end("Not found");
@@ -95,14 +125,12 @@ async function startHttp(port: number): Promise<void> {
       await mcpServer.connect(transport);
     }
 
-    await transport.handleRequest(req, res);
+    await runWithApiKey(req.headers, () => transport!.handleRequest(req, res));
   });
 
   httpServer.listen(port, () => {
     logStartup("http");
-    console.error(
-      `[ADM MCP] Listening on http://localhost:${port}/mcp`
-    );
+    console.error(`[ADM MCP] Listening on http://0.0.0.0:${port}/mcp`);
   });
 
   // Graceful shutdown
