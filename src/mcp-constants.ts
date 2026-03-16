@@ -85,7 +85,7 @@ export const styles: Record<string, React.CSSProperties> = {
     background: "var(--color-background-primary, #020617)",
     padding: "12px",
     overflow: "auto",
-    maxHeight: "520px",
+    height: "520px",
   },
   diagramFrame: {
     margin: "0 auto",
