@@ -88,7 +88,7 @@ function SvgView({ markup, zoom }: { markup: string; zoom: number }) {
 
     const parser = new DOMParser();
     const doc = parser.parseFromString(markup, "image/svg+xml");
-    const svgEl = doc.querySelector("svg");
+    const svgEl = doc.querySelector("svg") as SVGSVGElement | null;
     if (!svgEl) return;
 
     // Normalize SVG sizing and remember its intrinsic width for zooming.
@@ -97,12 +97,21 @@ function SvgView({ markup, zoom }: { markup: string; zoom: number }) {
     svgEl.removeAttribute("width");
     svgEl.removeAttribute("height");
 
-    const bbox = svgEl.getBBox();
-    const baseWidth = bbox?.width || svgEl.getBoundingClientRect().width || DEFAULT_SVG_BASE_WIDTH;
-    svgEl.setAttribute("data-base-width", String(baseWidth));
-
     container.innerHTML = "";
     container.appendChild(svgEl);
+
+    // Ensure viewBox includes all content to prevent clipping (e.g. titles cut off on the left).
+    const bbox = svgEl.getBBox();
+    if (bbox && (bbox.width > 0 || bbox.height > 0)) {
+      const pad = 8;
+      const x = bbox.x - pad;
+      const y = bbox.y - pad;
+      const w = bbox.width + pad * 2;
+      const h = bbox.height + pad * 2;
+      svgEl.setAttribute("viewBox", `${x} ${y} ${w} ${h}`);
+    }
+    const baseWidth = bbox?.width ? bbox.width + 16 : DEFAULT_SVG_BASE_WIDTH;
+    svgEl.setAttribute("data-base-width", String(baseWidth));
   }, [markup]);
 
   useEffect(() => {
@@ -156,54 +165,55 @@ function DiagramView({ state, onOpenLink }: { state: DiagramState; onOpenLink: (
 
   return (
     <div style={styles.container}>
-      <div style={styles.toolbar}>
-        <div style={styles.toolbarTitle}>Diagram Canvas</div>
-        <div style={styles.zoomControls}>
-          <button
-            type="button"
-            onClick={handleZoomOut}
-            disabled={!canZoomOut}
-            style={{
-              ...styles.zoomButton,
-              ...(canZoomOut ? {} : styles.zoomButtonDisabled),
-            }}
-          >
-            −
-          </button>
-          <div style={styles.zoomLevel}>{Math.round(zoom * 100)}%</div>
-          <button
-            type="button"
-            onClick={handleZoomIn}
-            disabled={!canZoomIn}
-            style={{
-              ...styles.zoomButton,
-              ...(canZoomIn ? {} : styles.zoomButtonDisabled),
-            }}
-          >
-            +
-          </button>
-          <button type="button" onClick={handleZoomReset} style={styles.zoomReset}>
-            Reset
-          </button>
-        </div>
-      </div>
-      <div style={styles.canvas}>
-        <div style={styles.diagramFrame}>
-          {state.svgMarkup && <SvgView markup={state.svgMarkup} zoom={zoom} />}
-          {!state.svgMarkup && state.imageData && (
-            <div style={styles.imageWrapper}>
-              <img
-                src={`data:${state.imageMimeType ?? "image/png"};base64,${state.imageData}`}
-                alt="Generated diagram"
-                style={{
-                  ...styles.image,
-                  transform: `scale(${zoom})`,
-                  transformOrigin: "center top",
-                  transition: `transform ${ZOOM_TRANSITION_DURATION}s ease-out`,
-                }}
-              />
+      <div style={styles.diagramContainer}>
+        <div style={styles.canvas}>
+          <div style={styles.diagramFrame}>
+            <div style={styles.controlsOverlay}>
+              <div style={styles.zoomControls}>
+                <button
+                  type="button"
+                  onClick={handleZoomOut}
+                  disabled={!canZoomOut}
+                  style={{
+                    ...styles.zoomButton,
+                    ...(canZoomOut ? {} : styles.zoomButtonDisabled),
+                  }}
+                >
+                  −
+                </button>
+                <div style={styles.zoomLevel}>{Math.round(zoom * 100)}%</div>
+                <button
+                  type="button"
+                  onClick={handleZoomIn}
+                  disabled={!canZoomIn}
+                  style={{
+                    ...styles.zoomButton,
+                    ...(canZoomIn ? {} : styles.zoomButtonDisabled),
+                  }}
+                >
+                  +
+                </button>
+                <button type="button" onClick={handleZoomReset} style={styles.zoomReset}>
+                  Reset
+                </button>
+              </div>
             </div>
-          )}
+            {state.svgMarkup && <SvgView markup={state.svgMarkup} zoom={zoom} />}
+            {!state.svgMarkup && state.imageData && (
+              <div style={styles.imageWrapper}>
+                <img
+                  src={`data:${state.imageMimeType ?? "image/png"};base64,${state.imageData}`}
+                  alt="Generated diagram"
+                  style={{
+                    ...styles.image,
+                    transform: `scale(${zoom})`,
+                    transformOrigin: "center top",
+                    transition: `transform ${ZOOM_TRANSITION_DURATION}s ease-out`,
+                  }}
+                />
+              </div>
+            )}
+          </div>
         </div>
       </div>
       {state.description && (
