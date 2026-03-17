@@ -6,7 +6,7 @@ import { registerGenerateAsciiTool } from "./tools/generate-ascii.js";
 import { registerGenerateImageTool } from "./tools/generate-image.js";
 import { registerGenerateMermaidTool } from "./tools/generate-mermaid.js";
 import { DIAGRAM_APP_RESOURCE_URI } from "./tools/shared.js";
-import { retrieveSvg } from "./tools/diagram-store.js";
+import { retrieveDiagramAsset } from "./tools/diagram-store.js";
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -64,10 +64,16 @@ export function createServer(): McpServer {
     new ResourceTemplate("diagram://result/{diagramId}", { list: undefined }),
     async (uri, { diagramId }) => {
       const id = Array.isArray(diagramId) ? diagramId[0] : diagramId;
-      const svg = id ? retrieveSvg(id) : undefined;
-      if (!svg) throw new Error(`Diagram not found: ${id}`);
+      const asset = id ? retrieveDiagramAsset(id) : undefined;
+      if (!asset) throw new Error(`Diagram not found: ${id}`);
+      const preferred = asset.svg ?? asset.png;
+      if (!preferred) throw new Error(`Diagram asset empty: ${id}`);
       return {
-        contents: [{ uri: uri.href, mimeType: "image/svg+xml", text: svg }],
+        contents: [
+          preferred.mimeType === "image/svg+xml"
+            ? { uri: uri.href, mimeType: preferred.mimeType, text: preferred.text }
+            : { uri: uri.href, mimeType: preferred.mimeType, blob: preferred.blob },
+        ],
       };
     },
   );
