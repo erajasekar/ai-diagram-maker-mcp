@@ -2,7 +2,7 @@ import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { postApiV2DiagramsGenerate } from "../generated/adm-api.js";
 import type { GenerateDiagramV2Request } from "../generated/model/index.js";
 import { debugLog, isDebug, isMock } from "../debug.js";
-import { storeSvg } from "./diagram-store.js";
+import { inlineExternalImages, storeSvg } from "./diagram-store.js";
 import { getApiKey } from "../api-key-context.js";
 
 export const DIAGRAM_APP_RESOURCE_URI = "ui://ai-diagram-maker/mcp-app.html";
@@ -133,7 +133,10 @@ export async function generateDiagram(
       if (svg) {
         try {
           const diagramId = new URL(fullDiagramUrl).pathname.split("/").filter(Boolean).pop();
-          if (diagramId) storeSvg(diagramId, svg);
+          if (diagramId) {
+            const inlinedSvg = await inlineExternalImages(svg);
+            storeSvg(diagramId, inlinedSvg);
+          }
         } catch {
           // URL parsing failed; image unavailable in App
         }

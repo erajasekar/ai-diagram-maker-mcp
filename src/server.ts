@@ -54,7 +54,23 @@ export function createServer(): McpServer {
     async () => {
       const html = readFileSync(join(DIST_DIR, "mcp-app.html"), "utf-8");
       return {
-        contents: [{ uri: DIAGRAM_APP_RESOURCE_URI, mimeType: RESOURCE_MIME_TYPE, text: html }],
+        contents: [
+          {
+            uri: DIAGRAM_APP_RESOURCE_URI,
+            mimeType: RESOURCE_MIME_TYPE,
+            text: html,
+            _meta: {
+              ui: {
+                csp: {
+                  // Fallback safety net: allow the public D2/Terrastruct icon CDN.
+                  // Icons are inlined as data URIs on the server side so this is
+                  // only needed if inlining fails for a particular icon URL.
+                  resourceDomains: ["https://icons.terrastruct.com"],
+                },
+              },
+            },
+          },
+        ],
       };
     },
   );
