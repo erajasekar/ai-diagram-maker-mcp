@@ -6,7 +6,7 @@ import { registerGenerateAsciiTool } from "./tools/generate-ascii.js";
 import { registerGenerateImageTool } from "./tools/generate-image.js";
 import { registerGenerateMermaidTool } from "./tools/generate-mermaid.js";
 import { DIAGRAM_APP_RESOURCE_URI } from "./tools/shared.js";
-import { retrieveDiagramAsset } from "./tools/diagram-store.js";
+import { retrieveSvg } from "./tools/diagram-store.js";
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -54,7 +54,21 @@ export function createServer(): McpServer {
     async () => {
       const html = readFileSync(join(DIST_DIR, "mcp-app.html"), "utf-8");
       return {
-        contents: [{ uri: DIAGRAM_APP_RESOURCE_URI, mimeType: RESOURCE_MIME_TYPE, text: html }],
+        contents: [
+          {
+            uri: DIAGRAM_APP_RESOURCE_URI,
+            mimeType: RESOURCE_MIME_TYPE,
+            text: html,
+            _meta: {
+              ui: {
+                csp: {
+                  // Fallback if inlining fails: allow Terrastruct icon CDN.
+                  resourceDomains: ["https://icons.terrastruct.com"],
+                },
+              },
+            },
+          },
+        ],
       };
     },
   );
@@ -64,16 +78,10 @@ export function createServer(): McpServer {
     new ResourceTemplate("diagram://result/{diagramId}", { list: undefined }),
     async (uri, { diagramId }) => {
       const id = Array.isArray(diagramId) ? diagramId[0] : diagramId;
-      const asset = id ? retrieveDiagramAsset(id) : undefined;
-      if (!asset) throw new Error(`Diagram not found: ${id}`);
-      const preferred = asset.svg ?? asset.png;
-      if (!preferred) throw new Error(`Diagram asset empty: ${id}`);
+      const svg = id ? retrieveSvg(id) : undefined;
+      if (!svg) throw new Error(`Diagram not found: ${id}`);
       return {
-        contents: [
-          preferred.mimeType === "image/svg+xml"
-            ? { uri: uri.href, mimeType: preferred.mimeType, text: preferred.text }
-            : { uri: uri.href, mimeType: preferred.mimeType, blob: preferred.blob },
-        ],
+        contents: [{ uri: uri.href, mimeType: "image/svg+xml", text: svg }],
       };
     },
   );

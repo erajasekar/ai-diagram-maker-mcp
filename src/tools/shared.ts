@@ -2,9 +2,8 @@ import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { postApiV2DiagramsGenerate } from "../generated/adm-api.js";
 import type { GenerateDiagramV2Request } from "../generated/model/index.js";
 import { debugLog, isDebug, isMock } from "../debug.js";
-import { storePng, storeSvg } from "./diagram-store.js";
+import { storeSvg } from "./diagram-store.js";
 import { getApiKey } from "../api-key-context.js";
-import { Resvg } from "@resvg/resvg-js";
 
 export const DIAGRAM_APP_RESOURCE_URI = "ui://ai-diagram-maker/mcp-app.html";
 
@@ -56,20 +55,32 @@ export interface DiagramParams {
   isIconEnabled?: boolean;
 }
 
+const ICON_FETCH_TIMEOUT_MS = 5000;
+
 async function fetchAsDataUri(url: string): Promise<string | null> {
   try {
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    const rawMime = res.headers.get("content-type") ?? "image/png";
-    // Data URI media types must not contain spaces (e.g. "image/svg+xml; charset=utf-8").
-    const mime = rawMime
-      .split(";")
-      .map((s) => s.trim())
-      .filter(Boolean)
-      .join(";");
-    const buf = Buffer.from(await res.arrayBuffer());
-    return `data:${mime};base64,${buf.toString("base64")}`;
-  } catch {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), ICON_FETCH_TIMEOUT_MS);
+    try {
+      const res = await fetch(url, { signal: controller.signal });
+      if (!res.ok) {
+        debugLog(`Icon fetch failed (${res.status}): ${url}`);
+        return null;
+      }
+      const rawMime = res.headers.get("content-type") ?? "image/png";
+      // Data URI media types must not contain spaces (e.g. "image/svg+xml; charset=utf-8").
+      const mime = rawMime
+        .split(";")
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .join(";");
+      const buf = Buffer.from(await res.arrayBuffer());
+      return `data:${mime};base64,${buf.toString("base64")}`;
+    } finally {
+      clearTimeout(timer);
+    }
+  } catch (err) {
+    debugLog(`Icon fetch error for ${url}:`, err instanceof Error ? err.message : err);
     return null;
   }
 }
@@ -84,6 +95,8 @@ async function inlineSvgImages(svg: string, baseUrl: string): Promise<string> {
 
   const found = [...svg.matchAll(hrefRe)].map((m) => m[2]).filter(Boolean);
   if (found.length === 0) return svg;
+
+  debugLog(`Inlining ${found.length} external image reference(s) in SVG`);
 
   const abs = [...new Set(found.filter((u) => /^https?:\/\//i.test(u)))];
   const protoRel = [...new Set(found.filter((u) => u.startsWith("//")))];
@@ -130,28 +143,12 @@ async function inlineSvgImages(svg: string, baseUrl: string): Promise<string> {
 
   if (map.size === 0) return svg;
 
+  debugLog(`Inlined ${map.size}/${found.length} external image(s) successfully`);
+
   return svg.replace(hrefRe, (match, attr: string, value: string) => {
     const data = map.get(value);
     return data ? `${attr}="${data}"` : match;
   });
-}
-
-function ensureSvgXmlns(svg: string): string {
-  if (svg.includes('xmlns="http://www.w3.org/2000/svg"')) return svg;
-  return svg.replace("<svg", '<svg xmlns="http://www.w3.org/2000/svg"');
-}
-
-function svgToPngBase64(svg: string): string {
-  const normalized = ensureSvgXmlns(svg);
-  try {
-    const resvg = new Resvg(normalized, {
-      // keep default sizing; resvg uses intrinsic SVG size/viewBox
-    });
-    const pngData = resvg.render().asPng();
-    return Buffer.from(pngData).toString("base64");
-  } catch (e) {
-    throw e;
-  }
 }
 
 /**
@@ -215,7 +212,7 @@ export async function generateDiagram(
   debugLog("Generate diagram API response:", responseForLog);
 
   if (response.status === 200) {
-    const { svg, png, text, diagramUrl } = response.data;
+    const { svg, text, diagramUrl } = response.data;
 
     const content: CallToolResult["content"] = [];
 
@@ -230,20 +227,12 @@ export async function generateDiagram(
         : diagramUrl;
       textContent += `\n\nEdit diagram: ${fullDiagramUrl} (open in browser to view and edit)`;
 
-      if (png || svg) {
+      if (svg) {
         try {
           const diagramId = new URL(fullDiagramUrl).pathname.split("/").filter(Boolean).pop();
           if (diagramId) {
-            if (svg) {
-              const inlined = await inlineSvgImages(svg, baseUrl);
-              const pngB64 = svgToPngBase64(inlined);
-              // Store SVG for best fidelity (titles/layout), and keep PNG as a fallback.
-              storeSvg(diagramId, inlined);
-              storePng(diagramId, pngB64);
-            } else if (png) {
-              // Fallback for unexpected API behavior
-              storePng(diagramId, png);
-            }
+            const inlined = await inlineSvgImages(svg, baseUrl);
+            storeSvg(diagramId, inlined);
           }
         } catch {
           // URL parsing failed; image unavailable in App
