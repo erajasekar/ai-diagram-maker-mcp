@@ -7,9 +7,9 @@ MCP server for [AI Diagram Maker](https://aidiagrammaker.com) — generate beaut
 ## Features
 
 - **5 tools** covering every input type: natural language text, JSON, ASCII art, images, and Mermaid
-- **Inline PNG rendering** — diagrams appear directly in the chat, no downloads
+- **Inline rendering ** — diagrams appear directly in the chat using MCP Apps UI, no downloads
 - **Diagram URL in responses** — open it in your browser to view and edit the diagram
-- **8 diagram types**: flowchart, sequence, ERD, system architecture, network architecture, UML, mindmap, workflow
+- **5 diagram types**: flowchart, sequence, ERD, system architecture, UML
 - Supports both **stdio** (local) and **HTTP/Streamable HTTP** (remote) transports
 
 ## Prerequisites
@@ -19,16 +19,33 @@ MCP server for [AI Diagram Maker](https://aidiagrammaker.com) — generate beaut
 
 ## Installation
 
-### Option A — run directly with npx (no install)
+### Option A — remote server (recommended)
 
-```bash
-ADM_API_KEY=your_api_key npx ai-diagram-maker-mcp
+Use our hosted MCP server — nothing to install. Add the config below to your MCP client (see step 3).
+
+```json
+{
+  "mcpServers": {
+    "ai-diagram-maker": {
+      "url": "https://mcp.aidiagrammaker.com/mcp",
+      "headers": {
+        "X-ADM-API-Key": "<your api key>"
+      }
+    }
+  }
+}
 ```
 
-### Option B — global install
+Replace `<your api key>` with your API key from step 1.
+
+### Option B — run directly with npx
+
+Run the MCP server locally. Nothing to install permanently — npx runs it on demand.
+
+The command below is a standalone example to test the server works with any MCP-compatible client:
 
 ```bash
-npm install -g ai-diagram-maker-mcp
+ADM_API_KEY=your_api_key npx ai-diagram-maker-mcp@latest
 ```
 
 ## MCP Client Configuration
