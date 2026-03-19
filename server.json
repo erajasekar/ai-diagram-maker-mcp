@@ -1,0 +1,79 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.erajasekar/ai-diagram-maker-mcp",
+  "title": "AI Diagram Maker",
+  "description": "Generate diagrams from natural language, code, ASCII, images, or Mermaid. MCP Apps UI. Cursor/Claude compatible.",
+  "repository": {
+    "url": "https://github.com/erajasekar/ai-diagram-maker-mcp",
+    "source": "github"
+  },
+  "version": "1.0.0",
+  "_meta": {
+    "io.modelcontextprotocol.registry/publisher-provided": {
+      "maintainers": ["erajasekar"],
+      "type": "mcp_server",
+      "status": "stable",
+      "framework": "MCP SDK 1.9.0",
+      "tools": 5,
+      "transport": ["stdio", "http"],
+      "keywords": [
+        "ai",
+        "diagram",
+        "mcp",
+        "model-context-protocol",
+        "d2lang",
+        "flowchart",
+        "sequence-diagram",
+        "erd",
+        "uml",
+        "architecture",
+        "mindmap",
+        "workflow",
+        "mermaid",
+        "ai-diagram-maker"
+      ],
+      "features": {
+        "diagram_types": {
+          "enabled": true,
+          "types": [
+            "flowchart",
+            "sequence",
+            "erd",
+            "system_architecture",
+            "network_architecture",
+            "uml",
+            "mindmap",
+            "workflow"
+          ]
+        },
+        "input_sources": {
+          "enabled": true,
+          "sources": ["natural language", "Code", "ASCII art", "images", "Mermaid"]
+        },
+        "mcp_apps_ui": {
+          "enabled": true,
+          "description": "Inline diagram rendering in chat with zoom controls"
+        }
+      }
+    }
+  },
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "ai-diagram-maker-mcp",
+      "version": "3.0.4",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "description": "Your API key for the service",
+          "isRequired": true,
+          "format": "string",
+          "isSecret": true,
+          "name": "YOUR_API_KEY"
+        }
+      ]
+    }
+  ]
+}
