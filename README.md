@@ -2,6 +2,8 @@
 
 MCP server for [AI Diagram Maker](https://aidiagrammaker.com) — generate beautiful software engineering diagrams directly inside Cursor, Claude Desktop, Claude Code, or any MCP-compatible AI agent.
 
+- [ai-diagram-maker-mcp](https://github.com/erajasekar/ai-diagram-maker-mcp) 🌐 ☁️ - Generate professional software diagrams from plain English descriptions. [![erajasekar/ai-diagram-maker-mcp MCP server](https://glama.ai/mcp/servers/erajasekar/ai-diagram-maker-mcp/badges/score.svg)](https://glama.ai/mcp/servers/erajasekar/ai-diagram-maker-mcp)
+
 ## Features
 
 - **5 tools** covering every input type: natural language text, JSON, ASCII art, images, and Mermaid
