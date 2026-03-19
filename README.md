@@ -2,6 +2,8 @@
 
 MCP server for [AI Diagram Maker](https://aidiagrammaker.com) — generate beautiful software engineering diagrams directly inside Cursor, Claude Desktop, Claude Code, or any MCP-compatible AI agent.
 
+[![AI Diagram Maker Server MCP server](https://glama.ai/mcp/servers/erajasekar/ai-diagram-maker-mcp/badges/card.svg)](https://glama.ai/mcp/servers/erajasekar/ai-diagram-maker-mcp)
+
 ## Features
 
 - **5 tools** covering every input type: natural language text, JSON, ASCII art, images, and Mermaid
@@ -70,7 +72,7 @@ To run the server locally instead, use:
 }
 ```
 
-To enable debug logging (request params and API payload), add `"ADM_DEBUG": "1"` to the `env` object. View output in **Cursor → Output** panel, then select the **MCP** or **ai-diagram-maker** channel so you see the server’s stderr logs.
+To enable debug logging (request params and API payload), add `"ADM_DEBUG": "1"` to the `env` object. View output in **Cursor → Output** panel, then select the **MCP** or **ai-diagram-maker** channel so you see the server's stderr logs.
 
 ### Claude Desktop
 
