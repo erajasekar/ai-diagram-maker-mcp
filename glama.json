@@ -1,0 +1,50 @@
+{
+  "$schema": "https://glama.ai/mcp/schemas/server.json",
+  "maintainers": ["erajasekar"],
+  "name": "ai-diagram-maker-mcp",
+  "description": "MCP server for AI Diagram Maker — generate software engineering diagrams from natural language, JSON, ASCII art, images, or Mermaid. Inline PNG rendering and diagram URL in responses. Works with Cursor, Claude Desktop, Claude Code, and any MCP-compatible AI.",
+  "type": "mcp_server",
+  "status": "stable",
+  "framework": "MCP SDK 1.9.0",
+  "tools": 5,
+  "transport": ["stdio", "http"],
+  "keywords": [
+    "ai",
+    "diagram",
+    "mcp",
+    "model-context-protocol",
+    "d2lang",
+    "flowchart",
+    "sequence-diagram",
+    "erd",
+    "uml",
+    "architecture",
+    "mindmap",
+    "workflow",
+    "mermaid",
+    "ai-diagram-maker"
+  ],
+  "features": {
+    "diagram_types": {
+      "enabled": true,
+      "types": [
+        "flowchart",
+        "sequence",
+        "erd",
+        "system_architecture",
+        "network_architecture",
+        "uml",
+        "mindmap",
+        "workflow"
+      ]
+    },
+    "input_sources": {
+      "enabled": true,
+      "sources": ["natural language", "JSON", "ASCII art", "images", "Mermaid"]
+    },
+    "mcp_apps_ui": {
+      "enabled": true,
+      "description": "Inline diagram rendering in chat with zoom controls"
+    }
+  }
+}
