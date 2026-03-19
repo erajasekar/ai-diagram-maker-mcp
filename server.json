@@ -2,7 +2,7 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.erajasekar/ai-diagram-maker-mcp",
   "title": "AI Diagram Maker",
-  "description": "Generate diagrams from natural language, code, ASCII, images, or Mermaid. MCP Apps UI. Cursor/Claude compatible.",
+  "description": "Generate software diagrams from natural language, code, ASCII, images, Mermaid.",
   "repository": {
     "url": "https://github.com/erajasekar/ai-diagram-maker-mcp",
     "source": "github"
@@ -10,12 +10,17 @@
   "version": "1.0.0",
   "_meta": {
     "io.modelcontextprotocol.registry/publisher-provided": {
-      "maintainers": ["erajasekar"],
+      "maintainers": [
+        "erajasekar"
+      ],
       "type": "mcp_server",
       "status": "stable",
       "framework": "MCP SDK 1.9.0",
       "tools": 5,
-      "transport": ["stdio", "http"],
+      "transport": [
+        "stdio",
+        "http"
+      ],
       "keywords": [
         "ai",
         "diagram",
@@ -48,7 +53,13 @@
         },
         "input_sources": {
           "enabled": true,
-          "sources": ["natural language", "Code", "ASCII art", "images", "Mermaid"]
+          "sources": [
+            "natural language",
+            "Code",
+            "ASCII art",
+            "images",
+            "Mermaid"
+          ]
         },
         "mcp_apps_ui": {
           "enabled": true,
