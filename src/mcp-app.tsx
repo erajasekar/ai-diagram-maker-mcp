@@ -31,6 +31,8 @@ interface DiagramState {
   errorMessage?: string;
 }
 
+const ZOOM_ROUNDING_FACTOR = 100;
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function parseDiagramResult(result: CallToolResult): Omit<DiagramState, "status"> {
@@ -133,30 +135,83 @@ function SvgView({ markup, zoom }: { markup: string; zoom: number }) {
   return <div ref={containerRef} style={styles.svgContainer} />;
 }
 
+function ImageView({
+  imageData,
+  mimeType,
+  zoom,
+}: {
+  imageData: string;
+  mimeType?: string;
+  zoom: number;
+}) {
+  const imageRef = useRef<HTMLImageElement>(null);
+  const [baseWidth, setBaseWidth] = useState<number>(DEFAULT_SVG_BASE_WIDTH);
+
+  return (
+    <div style={styles.imageWrapper}>
+      <img
+        ref={imageRef}
+        src={`data:${mimeType ?? "image/png"};base64,${imageData}`}
+        alt="Generated diagram"
+        onLoad={() => {
+          const img = imageRef.current;
+          if (!img) return;
+          const intrinsicWidth = img.naturalWidth || img.getBoundingClientRect().width || DEFAULT_SVG_BASE_WIDTH;
+          setBaseWidth(intrinsicWidth);
+        }}
+        style={{
+          ...styles.image,
+          width: `${baseWidth * zoom}px`,
+          height: "auto",
+          transition: `width ${ZOOM_TRANSITION_DURATION}s ease-out`,
+        }}
+      />
+    </div>
+  );
+}
+
 function DiagramView({ state, onOpenLink }: { state: DiagramState; onOpenLink: (url: string) => void }) {
   const [zoom, setZoom] = useState(DEFAULT_ZOOM);
+  const [zoomInput, setZoomInput] = useState(String(Math.round(DEFAULT_ZOOM * 100)));
 
   useEffect(() => {
     if (state.status === "success") {
       setZoom(DEFAULT_ZOOM);
+      setZoomInput(String(Math.round(DEFAULT_ZOOM * 100)));
     }
   }, [state.status]);
+
+  useEffect(() => {
+    setZoomInput(String(Math.round(zoom * 100)));
+  }, [zoom]);
 
   const canZoomIn = zoom < MAX_ZOOM;
   const canZoomOut = zoom > MIN_ZOOM;
 
   const handleZoomIn = () => {
     if (!canZoomIn) return;
-    setZoom((z) => Math.min(z + ZOOM_STEP, MAX_ZOOM));
+    setZoom((z) => Math.min(Math.round((z + ZOOM_STEP) * ZOOM_ROUNDING_FACTOR) / ZOOM_ROUNDING_FACTOR, MAX_ZOOM));
   };
 
   const handleZoomOut = () => {
     if (!canZoomOut) return;
-    setZoom((z) => Math.max(z - ZOOM_STEP, MIN_ZOOM));
+    setZoom((z) => Math.max(Math.round((z - ZOOM_STEP) * ZOOM_ROUNDING_FACTOR) / ZOOM_ROUNDING_FACTOR, MIN_ZOOM));
   };
 
   const handleZoomReset = () => {
     setZoom(DEFAULT_ZOOM);
+  };
+
+  const applyZoomFromInput = () => {
+    const parsed = Number(zoomInput);
+    if (Number.isNaN(parsed)) {
+      setZoomInput(String(Math.round(zoom * 100)));
+      return;
+    }
+
+    const clampedPercent = Math.min(Math.max(parsed, MIN_ZOOM * 100), MAX_ZOOM * 100);
+    const nextZoom = Math.round((clampedPercent / 100) * ZOOM_ROUNDING_FACTOR) / ZOOM_ROUNDING_FACTOR;
+    setZoom(nextZoom);
   };
 
   if (state.status === "idle") return <IdleView />;
@@ -181,7 +236,24 @@ function DiagramView({ state, onOpenLink }: { state: DiagramState; onOpenLink: (
                 >
                   −
                 </button>
-                <div style={styles.zoomLevel}>{Math.round(zoom * 100)}%</div>
+                <input
+                  type="number"
+                  className="zoom-input"
+                  min={MIN_ZOOM * 100}
+                  max={MAX_ZOOM * 100}
+                  step={1}
+                  value={zoomInput}
+                  onChange={(e) => setZoomInput(e.target.value)}
+                  onBlur={applyZoomFromInput}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.currentTarget.blur();
+                    }
+                  }}
+                  aria-label="Zoom percentage"
+                  style={styles.zoomInput}
+                />
+                <span style={styles.zoomSuffix}>%</span>
                 <button
                   type="button"
                   onClick={handleZoomIn}
@@ -200,18 +272,7 @@ function DiagramView({ state, onOpenLink }: { state: DiagramState; onOpenLink: (
             </div>
             {state.svgMarkup && <SvgView markup={state.svgMarkup} zoom={zoom} />}
             {!state.svgMarkup && state.imageData && (
-              <div style={styles.imageWrapper}>
-                <img
-                  src={`data:${state.imageMimeType ?? "image/png"};base64,${state.imageData}`}
-                  alt="Generated diagram"
-                  style={{
-                    ...styles.image,
-                    transform: `scale(${zoom})`,
-                    transformOrigin: "center top",
-                    transition: `transform ${ZOOM_TRANSITION_DURATION}s ease-out`,
-                  }}
-                />
-              </div>
+              <ImageView imageData={state.imageData} mimeType={state.imageMimeType} zoom={zoom} />
             )}
           </div>
         </div>

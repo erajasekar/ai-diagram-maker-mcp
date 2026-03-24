@@ -7,7 +7,7 @@ export const APP_INFO = {
 
 export const MIN_ZOOM = 0.25;
 export const MAX_ZOOM = 2;
-export const ZOOM_STEP = 0.25;
+export const ZOOM_STEP = 0.01;
 export const DEFAULT_ZOOM = 0.5;
 export const DEFAULT_SVG_BASE_WIDTH = 800;
 export const ZOOM_TRANSITION_DURATION = 0.15;
@@ -73,6 +73,22 @@ export const styles: Record<string, React.CSSProperties> = {
     fontSize: "12px",
     fontVariantNumeric: "tabular-nums",
     color: "var(--color-text-secondary, #475569)",
+  },
+  zoomInput: {
+    width: "28px",
+    height: "24px",
+    borderRadius: "6px",
+    border: "1px solid rgba(148,163,184,0.45)",
+    fontSize: "12px",
+    textAlign: "right",
+    padding: "0 4px",
+    color: "var(--color-text-primary, #0f172a)",
+    background: "white",
+  },
+  zoomSuffix: {
+    fontSize: "12px",
+    color: "var(--color-text-secondary, #475569)",
+    marginRight: "2px",
   },
   zoomReset: {
     border: "none",
@@ -173,6 +189,17 @@ export const styles: Record<string, React.CSSProperties> = {
 
 export const GLOBAL_MARKDOWN_STYLES = `
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Hide native number input spinners for zoom field */
+.zoom-input::-webkit-outer-spin-button,
+.zoom-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.zoom-input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
 
 /* Markdown prose styles scoped to description container */
 .md-prose { font-size: var(--font-text-md-size, 0.875rem); line-height: 1.6; color: var(--color-text-primary, #374151); }
