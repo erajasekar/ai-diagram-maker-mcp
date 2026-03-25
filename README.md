@@ -12,16 +12,39 @@ MCP server for [AI Diagram Maker](https://aidiagrammaker.com) — generate beaut
 - **5 diagram types**: flowchart, sequence, ERD, system architecture, UML
 - Supports both **stdio** (local) and **HTTP/Streamable HTTP** (remote) transports
 
+## Contents
+
+- [Prerequisites](#prerequisites)
+- [Hosted MCP server](#hosted-mcp-server)
+- [Installation](#installation)
+- [MCP client configuration](#mcp-client-configuration)
+- [Environment variables](#environment-variables)
+- [Tools](#tools)
+- [Trigger keywords](#trigger-keywords)
+- [Local developer setup](#local-developer-setup)
+- [License](#license)
+
 ## Prerequisites
 
 1. Node.js 18+
 2. An [AI Diagram Maker](https://aidiagrammaker.com) account and API key
 
-## Installation
+## Hosted MCP server
 
-### Option A — remote server (recommended)
+The public MCP endpoint is **https://mcp.aidiagrammaker.com/mcp** (Streamable HTTP). Nothing to install for this option.
 
-Use our hosted MCP server — nothing to install. Add the config below to your MCP client (see step 3).
+### Authentication (HTTP)
+
+For remote HTTP clients, send your API key on every request — **not** via environment variables:
+
+- `X-ADM-API-Key: <your_api_key>` (recommended), or
+- `Authorization: Bearer <your_api_key>`
+
+Use the API key from your AI Diagram Maker account (see [Prerequisites](#prerequisites)).
+
+### Remote server JSON example
+
+Merge this into your client’s MCP config (replace the API key placeholder):
 
 ```json
 {
@@ -29,58 +52,43 @@ Use our hosted MCP server — nothing to install. Add the config below to your M
     "ai-diagram-maker": {
       "url": "https://mcp.aidiagrammaker.com/mcp",
       "headers": {
-        "X-ADM-API-Key": "<your api key>"
+        "X-ADM-API-Key": "YOUR_API_KEY"
       }
     }
   }
 }
 ```
 
-Replace `<your api key>` with your API key from step 1.
+## Installation
 
-### Option B — run directly with npx
+### Option A — hosted server (recommended)
 
-Run the MCP server locally. Nothing to install permanently — npx runs it on demand.
+Use the [remote server JSON example](#remote-server-json-example) above and wire it into your client using [MCP client configuration](#mcp-client-configuration). No global install.
 
-The command below is a standalone example to test the server works with any MCP-compatible client:
+### Option B — run locally with npx
+
+Nothing to install permanently — `npx` runs the package on demand. The package name is `ai-diagram-maker-mcp`; append `@latest` if you want every invocation to resolve the newest release (recommended for one-off runs and `claude mcp add`).
 
 ```bash
 ADM_API_KEY=your_api_key npx ai-diagram-maker-mcp@latest
 ```
 
-## MCP Client Configuration
+## MCP client configuration
 
 ### Cursor
 
-#### Remote server (recommended)
+#### Remote (recommended)
 
-Use the hosted MCP server on Railway with your API key sent in the `X-ADM-API-Key` header. Add to `~/.cursor/mcp.json` or **Settings → MCP**:
-
-```json
-{
-  "mcpServers": {
-    "ai-diagram-maker": {
-      "url": "https://mcp.aidiagrammaker.com/mcp",
-      "headers": {
-        "X-ADM-API-Key": "your_api_key_here"
-      }
-    }
-  }
-}
-```
-
-Replace `your_api_key_here` with your [AI Diagram Maker](https://aidiagrammaker.com) API key. No environment variables are required for this setup.
+Add to `~/.cursor/mcp.json` or **Settings → MCP** using the [remote server JSON example](#remote-server-json-example). No environment variables are required for this setup.
 
 #### Local (stdio)
-
-To run the server locally instead, use:
 
 ```json
 {
   "mcpServers": {
     "ai-diagram-maker": {
       "command": "npx",
-      "args": ["-y", "ai-diagram-maker-mcp"],
+      "args": ["-y", "ai-diagram-maker-mcp@latest"],
       "env": {
         "ADM_API_KEY": "your_api_key_here"
       }
@@ -89,7 +97,7 @@ To run the server locally instead, use:
 }
 ```
 
-To enable debug logging (request params and API payload), add `"ADM_DEBUG": "1"` to the `env` object. View output in **Cursor → Output** panel, then select the **MCP** or **ai-diagram-maker** channel so you see the server’s stderr logs.
+Optional: add `"ADM_DEBUG": "1"` to `env` for debug logging — see [Environment variables](#environment-variables).
 
 ### Claude Desktop
 
@@ -100,7 +108,7 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
   "mcpServers": {
     "ai-diagram-maker": {
       "command": "npx",
-      "args": ["-y", "ai-diagram-maker-mcp"],
+      "args": ["-y", "ai-diagram-maker-mcp@latest"],
       "env": {
         "ADM_API_KEY": "your_api_key_here"
       }
@@ -126,30 +134,23 @@ claude mcp add ai-diagram-maker \
   --env ADM_API_KEY=your_api_key_here
 ```
 
-### HTTP transport (remote / hosted)
+### HTTP transport (local or self-hosted)
 
-A hosted instance runs at **https://mcp.aidiagrammaker.com/mcp**. Configure your MCP client with the server URL and pass the API key in request headers (not as an env var):
-
-- `X-ADM-API-Key: <api_key>` (recommended), or
-- `Authorization: Bearer <api_key>`
-
-See the [Cursor remote config](#remote-server-recommended) above for a ready-to-use example.
-
-To run your own HTTP server locally:
+To run an HTTP server yourself (same header-based auth as [Authentication (HTTP)](#authentication-http)):
 
 ```bash
-npx ai-diagram-maker-mcp --transport http
+npx ai-diagram-maker-mcp@latest --transport http
 ```
 
-The server listens on `$PORT` (or 3001). Send the API key in every request to `/mcp` via the headers above.
+The server listens on `$PORT` or **3001**. Point clients at `/mcp` and send the API key with each request using the headers above.
 
-## Environment Variables
+## Environment variables
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `ADM_API_KEY` | Yes (stdio only) | — | Your AI Diagram Maker API key (used only for stdio transport) |
+| `ADM_API_KEY` | Yes (stdio only) | — | Your AI Diagram Maker API key (stdio transport only; remote HTTP clients use headers — see [Authentication (HTTP)](#authentication-http)) |
 | `ADM_BASE_URL` | No | `https://app.aidiagrammaker.com` | Override for local/staging API; also used as the base for diagram URLs in tool responses |
-| `ADM_DEBUG` | No | — | Set to `1`, `true`, or `yes` to log request parameters from the AI agent and the request payload sent to the AI Diagram Maker API. Logs go to stderr. |
+| `ADM_DEBUG` | No | — | Set to `1`, `true`, or `yes` to log request parameters from the AI agent and the payload sent to the AI Diagram Maker API. Logs go to **stderr**. In **Cursor**, open **Output**, choose the **MCP** or **ai-diagram-maker** channel to read the server logs. |
 
 ## Tools
 
@@ -160,7 +161,7 @@ Generate a diagram from a natural language description.
 | Parameter | Type | Required | Description |
 |---|---|---|---|
 | `content` | string | Yes | Natural language description of the diagram |
-| `diagramType` | enum | No | flowchart, sequence, erd, system_architecture, network_architecture, uml, mindmap, workflow |
+| `diagramType` | enum | No | flowchart, sequence, erd, system_architecture, uml |
 | `prompt` | string | No | Additional styling/layout instruction |
 
 **Example prompts:**
@@ -216,7 +217,7 @@ Convert a Mermaid diagram definition to D2 and return a PNG image.
 | `prompt` | string | No | Optional layout or styling instruction |
 | `diagramType` | enum | No | Preferred diagram type for the converted output |
 
-## Trigger Keywords
+## Trigger keywords
 
 The AI agent will automatically select the right tool when you use phrases like:
 
@@ -273,7 +274,7 @@ Or use the npm script:
 ADM_API_KEY=your_api_key npm start
 ```
 
-**HTTP transport** — for remote clients or testing:
+**HTTP transport** — for remote clients or testing (same headers as [Authentication (HTTP)](#authentication-http)):
 
 ```bash
 ADM_API_KEY=your_api_key node dist/index.js --transport http
@@ -285,7 +286,7 @@ Or:
 ADM_API_KEY=your_api_key npm run start:http
 ```
 
-The HTTP server listens on `$PORT` (default `3001`). Send the API key in request headers: `X-ADM-API-Key` or `Authorization: Bearer <key>`.
+The HTTP server listens on `$PORT` (default **3001**).
 
 ### 6. Use the local server in Cursor
 
@@ -307,7 +308,7 @@ Point Cursor at your built server via **Settings → MCP** (or `~/.cursor/mcp.js
 
 Replace `/absolute/path/to/ai-diagram-maker-mcp` with the actual path to your cloned repo. After changing the config, restart Cursor or reload the MCP servers.
 
-Add `"ADM_DEBUG": "1"` to `env` to see request logs in **Cursor → Output** (MCP channel).
+For debug logging, add `"ADM_DEBUG": "1"` to `env` — see [Environment variables](#environment-variables).
 
 ## License
 
