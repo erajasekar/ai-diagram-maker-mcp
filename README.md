@@ -6,8 +6,8 @@ MCP server for [AI Diagram Maker](https://aidiagrammaker.com) — generate beaut
 
 ## Features
 
-- **5 tools** covering every input type: natural language text, JSON, ASCII art, images, and Mermaid
-- **Inline rendering ** — diagrams appear directly in the chat using MCP Apps UI, no downloads
+- **5 tools** covering every input type: natural language text, code, ASCII diagram, images, and Mermaid
+- **Inline rendering** — diagrams appear directly in the chat using MCP Apps UI, no downloads
 - **Diagram URL in responses** — open it in your browser to view and edit the diagram
 - **5 diagram types**: flowchart, sequence, ERD, system architecture, UML
 - Supports both **stdio** (local) and **HTTP/Streamable HTTP** (remote) transports
@@ -111,10 +111,18 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
 
 ### Claude Code
 
+#### macOS
+
+```bash
+claude mcp add ai-diagram-maker -t stdio -e ADM_API_KEY=<api_key> -- npx -y ai-diagram-maker-mcp@latest
+```
+
+#### Windows
+
 ```bash
 claude mcp add ai-diagram-maker \
   --command "npx" \
-  --args "-y,ai-diagram-maker-mcp" \
+  --args "-y,ai-diagram-maker-mcp@latest" \
   --env ADM_API_KEY=your_api_key_here
 ```
 
