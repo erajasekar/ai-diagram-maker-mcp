@@ -154,9 +154,32 @@ async function inlineSvgImages(svg: string, baseUrl: string): Promise<string> {
 /** Max UTF-8 length of SVG before skipping chat inline image (avoids huge tool payloads). */
 const MAX_SVG_CHARS_FOR_INLINE_IMAGE = 900_000;
 
+/** Max raster edge so PNG tool payloads stay reasonable for chat hosts. */
+const MAX_PNG_RASTER_EDGE = 4096;
+
+/**
+ * Rasterize SVG to PNG for MCP hosts (e.g. Claude) that reject `image/svg+xml` tool images.
+ */
+async function svgToPngBase64(svg: string): Promise<string | null> {
+  try {
+    const sharp = (await import("sharp")).default;
+    const buf = await sharp(Buffer.from(svg, "utf8"), { density: 144 })
+      .resize(MAX_PNG_RASTER_EDGE, MAX_PNG_RASTER_EDGE, {
+        fit: "inside",
+        withoutEnlargement: true,
+      })
+      .png()
+      .toBuffer();
+    return buf.toString("base64");
+  } catch (err) {
+    debugLog("svgToPngBase64 failed:", err instanceof Error ? err.message : err);
+    return null;
+  }
+}
+
 /**
  * Calls the AI Diagram Maker REST API and returns an MCP CallToolResult
- * with optional inline image (SVG) for chat clients, plus explanatory text.
+ * with optional inline image (PNG raster of the SVG) for chat clients, plus explanatory text.
  */
 export async function generateDiagram(
   inputType: GenerateDiagramV2Request["inputType"],
@@ -256,11 +279,16 @@ export async function generateDiagram(
       inlinedSvg.length > 0 &&
       inlinedSvg.length <= MAX_SVG_CHARS_FOR_INLINE_IMAGE
     ) {
-      content.push({
-        type: "image",
-        mimeType: "image/svg+xml",
-        data: Buffer.from(inlinedSvg, "utf8").toString("base64"),
-      });
+      const pngBase64 = await svgToPngBase64(inlinedSvg);
+      if (pngBase64) {
+        content.push({
+          type: "image",
+          mimeType: "image/png",
+          data: pngBase64,
+        });
+      } else {
+        debugLog("Inline diagram image omitted: SVG→PNG rasterization failed");
+      }
     }
 
     let textContent = text ?? "";
