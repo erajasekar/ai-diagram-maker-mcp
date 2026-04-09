@@ -1,8 +1,7 @@
 /**
  * In-memory store for generated diagram SVG.
- * Allows the MCP App to fetch the diagram via readServerResource()
- * without embedding it in tool result content (which would cause
- * Cursor to render the image natively in the chat).
+ * The MCP App fetches the diagram via readServerResource(); chat clients
+ * receive a PNG raster of the diagram in the tool result when rasterization succeeds.
  */
 
 const MAX_ENTRIES = 50;

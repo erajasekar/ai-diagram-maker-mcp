@@ -151,9 +151,35 @@ async function inlineSvgImages(svg: string, baseUrl: string): Promise<string> {
   });
 }
 
+/** Max UTF-8 length of SVG before skipping chat inline image (avoids huge tool payloads). */
+const MAX_SVG_CHARS_FOR_INLINE_IMAGE = 900_000;
+
+/** Max raster edge so PNG tool payloads stay reasonable for chat hosts. */
+const MAX_PNG_RASTER_EDGE = 4096;
+
+/**
+ * Rasterize SVG to PNG for MCP hosts (e.g. Claude) that reject `image/svg+xml` tool images.
+ */
+async function svgToPngBase64(svg: string): Promise<string | null> {
+  try {
+    const sharp = (await import("sharp")).default;
+    const buf = await sharp(Buffer.from(svg, "utf8"), { density: 144 })
+      .resize(MAX_PNG_RASTER_EDGE, MAX_PNG_RASTER_EDGE, {
+        fit: "inside",
+        withoutEnlargement: true,
+      })
+      .png()
+      .toBuffer();
+    return buf.toString("base64");
+  } catch (err) {
+    debugLog("svgToPngBase64 failed:", err instanceof Error ? err.message : err);
+    return null;
+  }
+}
+
 /**
  * Calls the AI Diagram Maker REST API and returns an MCP CallToolResult
- * containing an inline base64 PNG image plus the explanatory text.
+ * with optional inline image (PNG raster of the SVG) for chat clients, plus explanatory text.
  */
 export async function generateDiagram(
   inputType: GenerateDiagramV2Request["inputType"],
@@ -200,13 +226,20 @@ export async function generateDiagram(
 
   const response = await postApiV2DiagramsGenerate(requestBody);
 
+  const resData = response.data as {
+    svg?: string;
+    png?: string;
+    text?: string;
+    diagramUrl?: string;
+    d2Code?: string;
+  };
   const responseForLog = {
     status: response.status,
     data: {
-      ...response.data,
-      ...(typeof (response.data as { svg?: string })?.svg === "string" && {
-        svg: truncateForLog((response.data as { svg: string }).svg),
-      }),
+      ...resData,
+      ...(typeof resData.svg === "string" && { svg: truncateForLog(resData.svg) }),
+      ...(typeof resData.d2Code === "string" && { d2Code: truncateForLog(resData.d2Code) }),
+      ...(typeof resData.png === "string" && { png: truncateForLog(resData.png) }),
     },
   };
   debugLog("Generate diagram API response:", responseForLog);
@@ -214,30 +247,53 @@ export async function generateDiagram(
   if (response.status === 200) {
     const { svg, text, diagramUrl } = response.data;
 
+    const baseUrl = (process.env.ADM_BASE_URL ?? "https://app.aidiagrammaker.com").replace(
+      /\/$/,
+      ""
+    );
+
     const content: CallToolResult["content"] = [];
 
-    let textContent = text ?? "";
-    if (diagramUrl) {
-      const baseUrl = (process.env.ADM_BASE_URL ?? "https://app.aidiagrammaker.com").replace(
-        /\/$/,
-        ""
-      );
-      const fullDiagramUrl = diagramUrl.startsWith("/")
-        ? `${baseUrl}${diagramUrl}`
-        : diagramUrl;
-      textContent += `\n\nEdit diagram: ${fullDiagramUrl} (open in browser to view and edit)`;
+    let inlinedSvg: string | undefined;
+    if (svg) {
+      inlinedSvg = await inlineSvgImages(svg, baseUrl);
+    }
 
-      if (svg) {
+    let fullDiagramUrl: string | undefined;
+    if (diagramUrl) {
+      fullDiagramUrl = diagramUrl.startsWith("/") ? `${baseUrl}${diagramUrl}` : diagramUrl;
+      if (inlinedSvg && fullDiagramUrl) {
         try {
           const diagramId = new URL(fullDiagramUrl).pathname.split("/").filter(Boolean).pop();
           if (diagramId) {
-            const inlined = await inlineSvgImages(svg, baseUrl);
-            storeSvg(diagramId, inlined);
+            storeSvg(diagramId, inlinedSvg);
           }
         } catch {
           // URL parsing failed; image unavailable in App
         }
       }
+    }
+
+    if (
+      inlinedSvg &&
+      inlinedSvg.length > 0 &&
+      inlinedSvg.length <= MAX_SVG_CHARS_FOR_INLINE_IMAGE
+    ) {
+      const pngBase64 = await svgToPngBase64(inlinedSvg);
+      if (pngBase64) {
+        content.push({
+          type: "image",
+          mimeType: "image/png",
+          data: pngBase64,
+        });
+      } else {
+        debugLog("Inline diagram image omitted: SVG→PNG rasterization failed");
+      }
+    }
+
+    let textContent = text ?? "";
+    if (fullDiagramUrl) {
+      textContent += `\n\nEdit diagram: ${fullDiagramUrl} (open in browser to view and edit)`;
     }
     if (textContent) {
       content.push({ type: "text", text: textContent });
