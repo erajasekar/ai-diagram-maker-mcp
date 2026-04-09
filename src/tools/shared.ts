@@ -151,9 +151,12 @@ async function inlineSvgImages(svg: string, baseUrl: string): Promise<string> {
   });
 }
 
+/** Max UTF-8 length of SVG before skipping chat inline image (avoids huge tool payloads). */
+const MAX_SVG_CHARS_FOR_INLINE_IMAGE = 900_000;
+
 /**
  * Calls the AI Diagram Maker REST API and returns an MCP CallToolResult
- * containing an inline base64 PNG image plus the explanatory text.
+ * with optional inline image (SVG) for chat clients, plus explanatory text.
  */
 export async function generateDiagram(
   inputType: GenerateDiagramV2Request["inputType"],
@@ -200,13 +203,20 @@ export async function generateDiagram(
 
   const response = await postApiV2DiagramsGenerate(requestBody);
 
+  const resData = response.data as {
+    svg?: string;
+    png?: string;
+    text?: string;
+    diagramUrl?: string;
+    d2Code?: string;
+  };
   const responseForLog = {
     status: response.status,
     data: {
-      ...response.data,
-      ...(typeof (response.data as { svg?: string })?.svg === "string" && {
-        svg: truncateForLog((response.data as { svg: string }).svg),
-      }),
+      ...resData,
+      ...(typeof resData.svg === "string" && { svg: truncateForLog(resData.svg) }),
+      ...(typeof resData.d2Code === "string" && { d2Code: truncateForLog(resData.d2Code) }),
+      ...(typeof resData.png === "string" && { png: truncateForLog(resData.png) }),
     },
   };
   debugLog("Generate diagram API response:", responseForLog);
@@ -214,30 +224,48 @@ export async function generateDiagram(
   if (response.status === 200) {
     const { svg, text, diagramUrl } = response.data;
 
+    const baseUrl = (process.env.ADM_BASE_URL ?? "https://app.aidiagrammaker.com").replace(
+      /\/$/,
+      ""
+    );
+
     const content: CallToolResult["content"] = [];
 
-    let textContent = text ?? "";
-    if (diagramUrl) {
-      const baseUrl = (process.env.ADM_BASE_URL ?? "https://app.aidiagrammaker.com").replace(
-        /\/$/,
-        ""
-      );
-      const fullDiagramUrl = diagramUrl.startsWith("/")
-        ? `${baseUrl}${diagramUrl}`
-        : diagramUrl;
-      textContent += `\n\nEdit diagram: ${fullDiagramUrl} (open in browser to view and edit)`;
+    let inlinedSvg: string | undefined;
+    if (svg) {
+      inlinedSvg = await inlineSvgImages(svg, baseUrl);
+    }
 
-      if (svg) {
+    let fullDiagramUrl: string | undefined;
+    if (diagramUrl) {
+      fullDiagramUrl = diagramUrl.startsWith("/") ? `${baseUrl}${diagramUrl}` : diagramUrl;
+      if (inlinedSvg && fullDiagramUrl) {
         try {
           const diagramId = new URL(fullDiagramUrl).pathname.split("/").filter(Boolean).pop();
           if (diagramId) {
-            const inlined = await inlineSvgImages(svg, baseUrl);
-            storeSvg(diagramId, inlined);
+            storeSvg(diagramId, inlinedSvg);
           }
         } catch {
           // URL parsing failed; image unavailable in App
         }
       }
+    }
+
+    if (
+      inlinedSvg &&
+      inlinedSvg.length > 0 &&
+      inlinedSvg.length <= MAX_SVG_CHARS_FOR_INLINE_IMAGE
+    ) {
+      content.push({
+        type: "image",
+        mimeType: "image/svg+xml",
+        data: Buffer.from(inlinedSvg, "utf8").toString("base64"),
+      });
+    }
+
+    let textContent = text ?? "";
+    if (fullDiagramUrl) {
+      textContent += `\n\nEdit diagram: ${fullDiagramUrl} (open in browser to view and edit)`;
     }
     if (textContent) {
       content.push({ type: "text", text: textContent });

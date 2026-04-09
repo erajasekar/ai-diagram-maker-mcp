@@ -25,7 +25,18 @@ export function debugLog(...args: unknown[]): void {
     console.error(prefix);
     return;
   }
-  console.error(prefix, ...args);
+  // One line per message so MCP client log UIs do not split multi-arg stderr into bogus rows / "undefined".
+  const line = args
+    .map((a) => {
+      if (typeof a === "string") return a;
+      try {
+        return JSON.stringify(a);
+      } catch {
+        return String(a);
+      }
+    })
+    .join(" ");
+  console.error(`${prefix} ${line}`);
 }
 
 /** Always-on startup banner — confirms the server started and shows active env flags. */
