@@ -1,7 +1,7 @@
 {
   "name": "ai-diagram-maker-mcp",
   "mcpName": "io.github.erajasekar/ai-diagram-maker-mcp",
-  "version": "3.0.7",
+  "version": "3.0.8",
   "description": "MCP server for AI Diagram Maker — generate software engineering diagrams from text, JSON, ASCII art, or images",
   "type": "module",
   "main": "dist/index.js",
