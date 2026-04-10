@@ -41,6 +41,18 @@ function parseDiagramResult(result: CallToolResult): Omit<DiagramState, "status"
     return { errorMessage: msg };
   }
 
+  const sc = result.structuredContent as
+    | { editUrl?: string; descriptionMarkdown?: string }
+    | undefined;
+  if (sc && typeof sc.editUrl === "string" && sc.editUrl.length > 0) {
+    const desc =
+      typeof sc.descriptionMarkdown === "string" ? sc.descriptionMarkdown.trim() : "";
+    return {
+      description: desc || undefined,
+      editUrl: sc.editUrl,
+    };
+  }
+
   const textItems = result.content.filter((c) => c.type === "text");
 
   const firstText = textItems[0]?.text ?? "";

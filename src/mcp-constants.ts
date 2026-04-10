@@ -43,6 +43,10 @@ export const styles: Record<string, React.CSSProperties> = {
     background: "rgba(255,255,255,0.95)",
     border: "1px solid rgba(148,163,184,0.35)",
     boxShadow: "0 1px 3px rgba(15,23,42,0.08)",
+    // Hosts (e.g. Claude) may define --color-text-* for dark chrome; this bar is
+    // always light-surface UI — pin light scheme + explicit colors so inputs stay readable.
+    colorScheme: "light",
+    color: "#0f172a",
   },
   zoomControls: {
     display: "inline-flex",
@@ -55,7 +59,7 @@ export const styles: Record<string, React.CSSProperties> = {
     borderRadius: "999px",
     border: "none",
     background: "white",
-    color: "var(--color-text-primary, #0f172a)",
+    color: "#0f172a",
     fontSize: "14px",
     cursor: "pointer",
     display: "flex",
@@ -82,12 +86,12 @@ export const styles: Record<string, React.CSSProperties> = {
     fontSize: "12px",
     textAlign: "right",
     padding: "0 4px",
-    color: "var(--color-text-primary, #0f172a)",
+    color: "#0f172a",
     background: "white",
   },
   zoomSuffix: {
     fontSize: "12px",
-    color: "var(--color-text-secondary, #475569)",
+    color: "#475569",
     marginRight: "2px",
   },
   zoomReset: {
@@ -199,6 +203,11 @@ export const GLOBAL_MARKDOWN_STYLES = `
 .zoom-input[type=number] {
   -moz-appearance: textfield;
   appearance: textfield;
+}
+/* Explicit fill: some hosts style inputs for dark UI; this field is always on white. */
+.zoom-input {
+  color: #0f172a;
+  -webkit-text-fill-color: #0f172a;
 }
 
 /* Markdown prose styles scoped to description container */

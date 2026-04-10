@@ -46,6 +46,23 @@ function paramsForLog(params: DiagramParams): Record<string, unknown> {
 }
 
 /**
+ * Strips patterns that MCP hosts often render as inline images or second diagrams
+ * on top of the interactive MCP App (duplicate preview + zoom viewer).
+ */
+function sanitizeToolResultTextForChatHost(raw: string): string {
+  let out = raw;
+  // Markdown images
+  out = out.replace(/!\[[^\]]*]\([^)]+\)/g, "");
+  // HTML img tags
+  out = out.replace(/<img\b[^>]*>/gi, "");
+  // Standalone data-URI lines (some APIs embed thumbnails in prose)
+  out = out.replace(/^\s*data:image\/[^;\s]+;base64,[A-Za-z0-9+/=\s]+\s*$/gm, "");
+  // Fenced diagram blocks that markdown renderers may visualize
+  out = out.replace(/```(?:mermaid|svg|d2)\s*[\s\S]*?```/gi, "");
+  return out.replace(/\n{3,}/g, "\n\n").trim();
+}
+
+/**
  * Shared parameters accepted by all diagram generation tools.
  */
 export interface DiagramParams {
@@ -153,7 +170,8 @@ async function inlineSvgImages(svg: string, baseUrl: string): Promise<string> {
 
 /**
  * Calls the AI Diagram Maker REST API and returns an MCP CallToolResult
- * containing an inline base64 PNG image plus the explanatory text.
+ * with plain text (sanitized so hosts do not render a duplicate static diagram)
+ * plus optional structured fields for the MCP App viewer.
  */
 export async function generateDiagram(
   inputType: GenerateDiagramV2Request["inputType"],
@@ -216,16 +234,14 @@ export async function generateDiagram(
 
     const content: CallToolResult["content"] = [];
 
-    let textContent = text ?? "";
+    const body = sanitizeToolResultTextForChatHost(text ?? "");
+    let fullDiagramUrl: string | undefined;
     if (diagramUrl) {
       const baseUrl = (process.env.ADM_BASE_URL ?? "https://app.aidiagrammaker.com").replace(
         /\/$/,
         ""
       );
-      const fullDiagramUrl = diagramUrl.startsWith("/")
-        ? `${baseUrl}${diagramUrl}`
-        : diagramUrl;
-      textContent += `\n\nEdit diagram: ${fullDiagramUrl} (open in browser to view and edit)`;
+      fullDiagramUrl = diagramUrl.startsWith("/") ? `${baseUrl}${diagramUrl}` : diagramUrl;
 
       if (svg) {
         try {
@@ -239,11 +255,26 @@ export async function generateDiagram(
         }
       }
     }
+
+    const textContent = fullDiagramUrl
+      ? body
+        ? `${body}\n\nEdit diagram: ${fullDiagramUrl} (open in browser to view and edit)`
+        : `Edit diagram: ${fullDiagramUrl} (open in browser to view and edit)`
+      : body;
+
     if (textContent) {
       content.push({ type: "text", text: textContent });
     }
 
-    return { content };
+    return {
+      content,
+      ...(fullDiagramUrl && {
+        structuredContent: {
+          editUrl: fullDiagramUrl,
+          ...(body ? { descriptionMarkdown: body } : {}),
+        },
+      }),
+    };
   }
 
   // Handle error responses
