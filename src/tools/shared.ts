@@ -22,6 +22,19 @@ export type DiagramType = (typeof DIAGRAM_TYPES)[number];
 
 const MAX_CONTENT_LOG_LENGTH = 2000;
 
+/** Account page for credits / billing; override with ADM_ACCOUNT_URL, else ADM_BASE_URL + /account. */
+function getCreditsAccountUrl(): string {
+  const fromEnv = process.env.ADM_ACCOUNT_URL?.trim();
+  if (fromEnv) {
+    return fromEnv.replace(/\/$/, "");
+  }
+  const base = (process.env.ADM_BASE_URL ?? "https://app.aidiagrammaker.com").replace(
+    /\/$/,
+    ""
+  );
+  return `${base}/account`;
+}
+
 /** Truncate content for safe logging (e.g. base64 image data). */
 function truncateForLog(value: string): string {
   if (value.length <= MAX_CONTENT_LOG_LENGTH) return value;
@@ -295,6 +308,10 @@ export async function generateDiagram(
 
   if (response.status === 429 && errorData?.rateLimitError?.retryAfter) {
     errorMessage += ` (retry after ${errorData.rateLimitError.retryAfter} seconds)`;
+  }
+
+  if (response.status === 402) {
+    errorMessage += `\n\nManage credits and billing: ${getCreditsAccountUrl()}`;
   }
 
   return {
